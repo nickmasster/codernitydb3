@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,27 +16,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from codernitydb3.index import (Index, IndexException, DocIdNotFound,
-                                ElemNotFound, TryReindexException,
-                                IndexPreconditionsException)
-
 import os
 import marshal
 import io
 import struct
 import shutil
 
-from codernitydb3.storage import IU_Storage, DummyStorage
+from codernitydb3.index import (Index, IndexException, DocIdNotFound,
+                                ElemNotFound, TryReindexException,
+                                IndexPreconditionsException)
 
+from codernitydb3.rr_cache import cache1lvl
+from codernitydb3.misc import random_hex_32
+from codernitydb3.storage import IU_Storage, DummyStorage
 from codernitydb3.env import cdb_environment
 
 if cdb_environment.get('rlock_obj'):
     from codernitydb3 import patch
     patch.patch_cache_rr(cdb_environment['rlock_obj'])
-
-from codernitydb3.rr_cache import cache1lvl
-
-from codernitydb3.misc import random_hex_32
 
 try:
     from codernitydb3 import __version__
@@ -76,7 +74,7 @@ class IU_HashIndex(Index):
         self.hash_lim = hash_lim
         if not storage_class:
             storage_class = IU_Storage
-        if storage_class and not isinstance(storage_class, basestring):
+        if storage_class and not isinstance(storage_class, str):
             storage_class = storage_class.__name__
         self.storage_class = storage_class
         self.storage = None
@@ -121,7 +119,7 @@ class IU_HashIndex(Index):
                          bucket_line_format=self.bucket_line_format,
                          entry_line_format=self.entry_line_format,
                          hash_lim=self.hash_lim,
-                         version=self.__version__,
+                         __version__=self.__version__,
                          storage_class=self.storage_class)
             f.write(marshal.dumps(props))
         self.buckets = io.open(os.path.join(self.db_path, self.name + "_buck"),
@@ -163,18 +161,18 @@ class IU_HashIndex(Index):
         if curr_data:
             location = self.bucket_struct.unpack(curr_data)[0]
             if not location:
-                return None, None, 0, 0, 'u'
+                return None, None, 0, 0, self.STATUS_U
             found_at, doc_id, l_key, start, size, status, _next = self._locate_key(
                 key, location)
-            if status == 'd':  # when first record from many is deleted
+            if status == self.STATUS_D:  # when first record from many is deleted
                 while True:
                     found_at, doc_id, l_key, start, size, status, _next = self._locate_key(
                         key, _next)
-                    if status != 'd':
+                    if status != self.STATUS_D:
                         break
             return doc_id, l_key, start, size, status
         else:
-            return None, None, 0, 0, 'u'
+            return None, None, 0, 0, self.STATUS_U
 
     def _find_key_many(self, key, limit=1, offset=0):
         location = None
@@ -192,7 +190,7 @@ class IU_HashIndex(Index):
             except IndexException:
                 break
             else:
-                if status != 'd':
+                if status != self.STATUS_D:
                     if l_key == key:  # in case of hash function conflicts
                         offset -= 1
                 location = _next
@@ -205,7 +203,7 @@ class IU_HashIndex(Index):
             except IndexException:
                 break
             else:
-                if status != 'd':
+                if status != self.STATUS_D:
                     if l_key == key:  # in case of hash function conflicts
                         yield doc_id, start, size, status
                         limit -= 1
@@ -292,13 +290,14 @@ class IU_HashIndex(Index):
             # todo, maybe partial read there...
             doc_id, l_key, start, size, status, _next = self.entry_struct.unpack(
                 data)
-            if not _next or status == 'd':
+            if not _next or status == self.STATUS_D:
                 return self.buckets.tell(
                 ) - self.entry_line_size, doc_id, l_key, start, size, status, _next
             else:
                 location = _next  # go to next record
 
-    def update(self, doc_id, key, u_start=0, u_size=0, u_status='o'):
+    def update(self, doc_id, key, u_start=0, u_size=0, u_status=None):
+        u_status = u_status or self.STATUS_O
         start_position = self._calculate_position(key)
         self.buckets.seek(start_position)
         curr_data = self.buckets.read(self.bucket_line_size)
@@ -318,7 +317,8 @@ class IU_HashIndex(Index):
         self._locate_doc_id.delete(doc_id)
         return True
 
-    def insert(self, doc_id, key, start, size, status='o'):
+    def insert(self, doc_id, key, start, size, status=None):
+        status = status or self.STATUS_O
         start_position = self._calculate_position(key)
         self.buckets.seek(start_position)
         curr_data = self.buckets.read(self.bucket_line_size)
@@ -394,7 +394,7 @@ class IU_HashIndex(Index):
             except IndexException:
                 break
             else:
-                if status != 'd':
+                if status != self.STATUS_D:
                     offset -= 1
         while limit:
             curr_data = self.buckets.read(self.entry_line_size)
@@ -406,7 +406,7 @@ class IU_HashIndex(Index):
             except IndexException:
                 break
             else:
-                if status != 'd':
+                if status != self.STATUS_D:
                     yield doc_id, key, start, size, status
                     limit -= 1
 
@@ -450,7 +450,8 @@ class IU_HashIndex(Index):
             doc_id, key, location)
         self.buckets.seek(found_at)
         self.buckets.write(
-            self.entry_struct.pack(doc_id, key, start, size, 'd', _next))
+            self.entry_struct.pack(doc_id, key, start, size, self.STATUS_D,
+                                   _next))
         self.flush()
         # self._fix_link(_key, _prev, _next)
         self._find_key.delete(key)
@@ -470,7 +471,7 @@ class IU_HashIndex(Index):
         gen = self.all()
         while True:
             try:
-                doc_id, key, start, size, status = gen.next()
+                doc_id, key, start, size, status = next(gen)
             except StopIteration:
                 break
             self.storage._f.seek(start)
@@ -498,10 +499,10 @@ class IU_HashIndex(Index):
         return True
 
     def make_key(self, key):
-        return key
+        return key if isinstance(key, bytes) else key.encode('utf8')
 
     def make_key_value(self, data):
-        return '1', data
+        return b'1', data
 
     def _clear_cache(self):
         self._find_key.clear()
@@ -552,7 +553,7 @@ class IU_UniqueHashIndex(IU_HashIndex):
                 key, location)
             return l_key, rev, start, size, status
         else:
-            return None, None, 0, 0, 'u'
+            return None, None, 0, 0, self.STATUS_U
 
     def _find_key_many(self, *args, **kwargs):
         raise NotImplementedError()
@@ -573,7 +574,7 @@ class IU_UniqueHashIndex(IU_HashIndex):
                 data)
             if l_key == key:
                 raise IndexException("The '%s' key already exists" % key)
-            if not _next or status == 'd':
+            if not _next or status == self.STATUS_D:
                 return self.buckets.tell(
                 ) - self.entry_line_size, l_key, rev, start, size, status, _next
             else:
@@ -609,7 +610,8 @@ class IU_UniqueHashIndex(IU_HashIndex):
         return self.buckets.tell(
         ) - self.entry_line_size, l_key, rev, start, size, status, _next
 
-    def update(self, key, rev, u_start=0, u_size=0, u_status='o'):
+    def update(self, key, rev, u_start=0, u_size=0, u_status=None):
+        u_status = u_status or self.STATUS_O
         start_position = self._calculate_position(key)
         self.buckets.seek(start_position)
         curr_data = self.buckets.read(self.bucket_line_size)
@@ -632,7 +634,8 @@ class IU_UniqueHashIndex(IU_HashIndex):
         self._find_key.delete(key)
         return True
 
-    def insert(self, key, rev, start, size, status='o'):
+    def insert(self, key, rev, start, size, status=None):
+        status = status or self.STATUS_O
         start_position = self._calculate_position(key)
         self.buckets.seek(start_position)
         curr_data = self.buckets.read(self.bucket_line_size)
@@ -697,7 +700,7 @@ class IU_UniqueHashIndex(IU_HashIndex):
             except IndexException:
                 break
             else:
-                if status != 'd':
+                if status != self.STATUS_D:
                     offset -= 1
 
         while limit:
@@ -710,7 +713,7 @@ class IU_UniqueHashIndex(IU_HashIndex):
             except IndexException:
                 break
             else:
-                if status != 'd':
+                if status != self.STATUS_D:
                     yield doc_id, rev, start, size, status
                     limit -= 1
 
@@ -718,15 +721,17 @@ class IU_UniqueHashIndex(IU_HashIndex):
         raise NotImplementedError()
 
     def delete(self, key, start=0, size=0):
-        self.update(key, '00000000', start, size, 'd')
+        self.update(key, b'00000000', start, size, self.STATUS_D)
 
     def make_key_value(self, data):
         _id = data['_id']
-        try:
-            _id = bytes(data['_id'])
-        except:
-            raise IndexPreconditionsException(
-                "_id must be valid string/bytes object")
+        if not isinstance(_id, bytes):
+            _id = _id.encode('utf8') if isinstance(_id, str) else _id
+            try:
+                _id = bytes(_id)
+            except:
+                raise IndexPreconditionsException(
+                    "_id must be valid string/bytes object")
         if len(_id) != 32:
             raise IndexPreconditionsException("Invalid _id lenght")
         del data['_id']
@@ -817,7 +822,8 @@ class IU_MultiHashIndex(IU_HashIndex):
     def __init__(self, *args, **kwargs):
         super(IU_MultiHashIndex, self).__init__(*args, **kwargs)
 
-    def insert(self, doc_id, key, start, size, status='o'):
+    def insert(self, doc_id, key, start, size, status=None):
+        status = status or self.STATUS_O
         if isinstance(key, (list, tuple)):
             key = set(key)
         elif not isinstance(key, set):
@@ -827,7 +833,8 @@ class IU_MultiHashIndex(IU_HashIndex):
             ins(doc_id, curr_key, start, size, status)
         return True
 
-    def update(self, doc_id, key, u_start, u_size, u_status='o'):
+    def update(self, doc_id, key, u_start, u_size, u_status=None):
+        u_status = u_status or self.STATUS_O
         if isinstance(key, (list, tuple)):
             key = set(key)
         elif not isinstance(key, set):

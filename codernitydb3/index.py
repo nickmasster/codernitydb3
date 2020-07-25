@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,9 +64,13 @@ class IndexPreconditionsException(IndexException):
     pass
 
 
-class Index(object):
+class Index:
 
     __version__ = __version__
+
+    STATUS_O = b'o'
+    STATUS_U = b'u'
+    STATUS_D = b'd'
 
     custom_header = ""  # : use it for imports required by your index
 
@@ -73,6 +78,7 @@ class Index(object):
         self.name = name
         self._start_ind = 500
         self.db_path = db_path
+        # self.storage = None
 
     def open_index(self):
         if not os.path.isfile(os.path.join(self.db_path, self.name + '_buck')):
@@ -98,7 +104,7 @@ class Index(object):
     def _fix_params(self):
         self.buckets.seek(0)
         props = marshal.loads(self.buckets.read(self._start_ind))
-        for k, v in props.iteritems():
+        for k, v in props.items():
             self.__dict__[k] = v
         self.buckets.seek(0, 2)
 

@@ -15,17 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import uuid
+from hashlib import md5
+from py.test import raises
+from pytest import fixture
+
 from codernitydb3.indexcreator import Parser, IndexCreatorValueException, IndexCreatorFunctionException
 from codernitydb3.database import Database, RecordNotFound
 from codernitydb3.hash_index import HashIndex
 from codernitydb3.tree_index import TreeBasedIndex
 from codernitydb3.tree_index import MultiTreeBasedIndex
 from codernitydb3.hash_index import MultiHashIndex
-from itertools import izip
-from hashlib import md5
-from py.test import raises
-import os
-import uuid
 
 # class db_set():
 # def __init__(self,t):
@@ -38,8 +39,9 @@ import uuid
 # self.db.destroy()
 
 
-def pytest_funcarg__db(request):
-    db = Database(os.path.join(str(request.getfuncargvalue('tmpdir')), 'db'))
+@fixture
+def db(request):
+    db = Database(os.path.join(str(request.getfixturevalue('tmpdir')), 'db'))
     db.create()
     return db
 
@@ -74,7 +76,7 @@ class TestIndexCreatorWithDatabase:
         0
         """
         db.add_index(s)
-        assert s == db.get_index_code('s', code_switch='S')
+        assert s.encode('utf8') == db.get_index_code('s', code_switch='S')
 
         s1 = """
         type = TreeBasedIndex
@@ -86,7 +88,7 @@ class TestIndexCreatorWithDatabase:
         0
         """
         db.add_index(s1)
-        assert s1 == db.get_index_code('s1', code_switch='S')
+        assert s1.encode('utf8') == db.get_index_code('s1', code_switch='S')
 
 
 class TestMultiIndexCreatorWithInternalImports:

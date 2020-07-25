@@ -15,6 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+import os
+import random
+from hashlib import md5
+
 from codernitydb3.database import Database, RecordDeleted, RecordNotFound
 from codernitydb3.database import DatabaseException
 
@@ -23,11 +28,6 @@ from codernitydb3.index import IndexException
 from codernitydb3.misc import random_hex_32
 
 from codernitydb3 import rr_cache
-
-import pytest
-import os
-import random
-from hashlib import md5
 
 try:
     from collections import Counter
@@ -68,10 +68,17 @@ class Md5Index(HashIndex):
         super(Md5Index, self).__init__(*args, **kwargs)
 
     def make_key_value(self, data):
-        return md5(data['name']).digest(), {}
+        a_val = data.get('a')
+        if a_val:
+            if not isinstance(a_val, str):
+                a_val = str(a_val)
+            return md5(a_val.encode('utf8')).digest(), {}
+        return {}
 
     def make_key(self, key):
-        return md5(key).digest()
+        if not isinstance(key, str):
+            key = str(key)
+        return md5(key.encode('utf8')).digest()
 
 
 class WithAIndex(HashIndex):
@@ -81,20 +88,23 @@ class WithAIndex(HashIndex):
         super(WithAIndex, self).__init__(*args, **kwargs)
 
     def make_key_value(self, data):
-        a_val = data.get("a")
+        a_val = data.get('a')
         if a_val:
-            if not isinstance(a_val, basestring):
+            if not isinstance(a_val, str):
                 a_val = str(a_val)
-            return md5(a_val).digest(), {}
-        return None
+            return md5(a_val.encode('utf8')).digest(), {}
+        return {}
 
     def make_key(self, key):
-        if not isinstance(key, basestring):
+        if not isinstance(key, str):
             key = str(key)
-        return md5(key).digest()
+        return md5(key.encode('utf8')).digest()
 
 
 class HashIndexTests:
+
+    _db = Database
+
     def setup_method(self, method):
         self.counter = Counter()
 
@@ -141,25 +151,25 @@ class HashIndexTests:
         db.create()
 
         ins = []
-        for x in xrange(inserts):
+        for x in range(inserts):
             doc = dict(x=x)
             db.insert(doc)
             ins.append(doc)
             self.counter['ins'] += 1
 
-        for i in xrange(inserts / 10):
+        for i in range(inserts // 10):
             curr = ins.pop(random.randint(0, len(ins) - 1))
             db.delete(curr)
 
         assert len(ins) == db.count(db.all, 'id')
 
-        for x in xrange(inserts):
+        for x in range(inserts):
             doc = dict(x=x)
             db.insert(doc)
             ins.append(doc)
             self.counter['ins'] += 1
 
-        for i in xrange(inserts / 10):
+        for i in range(inserts // 10):
             curr = ins.pop(random.randint(0, len(ins) - 1))
             db.delete(curr)
 
@@ -173,7 +183,7 @@ class HashIndexTests:
         ])
         db.create()
 
-        for x in xrange(100):
+        for x in range(100):
             doc = dict(test=6)
             doc.update(db.insert(doc))
             if doc['test'] > 5:
@@ -206,26 +216,26 @@ class HashIndexTests:
         db.create()
 
         ins = []
-        for x in xrange(inserts):
+        for x in range(inserts):
             doc = dict(x=x)
             db.insert(doc)
             ins.append(doc)
             self.counter['ins'] += 1
 
-        for i in xrange(inserts / 10):
+        for i in range(inserts // 10):
             curr = ins.pop(random.randint(0, len(ins) - 1))
             d = {"_id": curr['_id'], '_rev': curr['_rev']}
             db.delete(d)
 
         assert len(ins) == db.count(db.all, 'id')
 
-        for x in xrange(inserts):
+        for x in range(inserts):
             doc = dict(x=x)
             db.insert(doc)
             ins.append(doc)
             self.counter['ins'] += 1
 
-        for i in xrange(inserts / 10):
+        for i in range(inserts // 10):
             curr = ins.pop(random.randint(0, len(ins) - 1))
             db.delete(curr)
 
@@ -241,7 +251,7 @@ class HashIndexTests:
 
         ins = []
 
-        for x in xrange(inserts):
+        for x in range(inserts):
             doc = dict(test=1)
             db.insert(doc)
             ins.append(doc)
@@ -255,7 +265,7 @@ class HashIndexTests:
                                     limit=inserts + 1)
         assert 0 == db.count(db.get_many, 'custom', key=1, limit=inserts + 1)
 
-        sample = random.sample(ins, inserts / 10)
+        sample = random.sample(ins, inserts // 10)
         for curr in sample:
             curr['test'] = 10
             db.update(curr)
@@ -279,11 +289,11 @@ class HashIndexTests:
         db.create()
 
         inserted = []
-        for x in xrange(inserts):
+        for x in range(inserts):
             inserted.append(db.insert(dict(test=x)))
             inserted[-1]['test'] = x
         for el in inserted[::20]:
-            for i in xrange(4):
+            for i in range(4):
                 curr = db.get('id', el['_id'], with_storage=True)
                 assert el['test'] == curr['test']
                 el['test'] += random.randint(1, 3)
@@ -309,7 +319,7 @@ class HashIndexTests:
         db.set_indexes([UniqueHashIndex(db.path, 'id')])
         db.create()
         l = []
-        for i in xrange(inserts):
+        for i in range(inserts):
             c = dict(i=i)
             db.insert(c)
             l.append(c)
@@ -318,23 +328,23 @@ class HashIndexTests:
             c = db.get('id', curr['_id'])
             assert c['_id'] == curr['_id']
             assert c['i'] == j
-        for i in xrange(inserts):
+        for i in range(inserts):
             curr = l[i]
             c = db.get("id", curr['_id'])
             c['update'] = True
             db.update(c)
 
-        for j in xrange(inserts):
+        for j in range(inserts):
             curr = l[i]
             c = db.get('id', curr['_id'])
             assert c['update'] == True
 
-        for j in xrange(inserts):
+        for j in range(inserts):
             curr = l[j]
             c = db.get('id', curr['_id'])
             assert db.delete(c) == True
 
-        for j in xrange(inserts):
+        for j in range(inserts):
             with pytest.raises(RecordDeleted):
                 db.get('id', l[j]['_id'])
 
@@ -345,7 +355,7 @@ class HashIndexTests:
         db.set_indexes([UniqueHashIndex(db.path, 'id')])
         db.create()
         l = []
-        for i in xrange(inserts):
+        for i in range(inserts):
             c = dict(i=i)
             db.insert(c)
             l.append(c)
@@ -362,12 +372,12 @@ class HashIndexTests:
         db.set_indexes([UniqueHashIndex(db.path, 'id')])
         db.create()
         l = []
-        for i in xrange(10):
+        for i in range(10):
             c = dict(i=i)
             db.insert(c)
             l.append(c)
 
-        for i in xrange(10):
+        for i in range(10):
             curr = l[i]
             c = db.get("id", curr['_id'])
             c['update'] = True
@@ -388,7 +398,7 @@ class HashIndexTests:
         db.set_indexes([UniqueHashIndex(db.path, 'id')])
         db.create()
         l = []
-        for i in xrange(10):
+        for i in range(10):
             if i % 2 == 0:
                 c = dict(i=i, even=True)
             else:
@@ -417,7 +427,7 @@ class HashIndexTests:
              Md5Index(db.path, 'md5')])
         db.create()
 
-        a = dict(name='pigmej')
+        a = dict(a='pigmej')
         db.insert(a)
         db.get('md5', 'pigmej')
 
@@ -435,7 +445,7 @@ class HashIndexTests:
 
         l_1 = []
         l_0 = []
-        for i in xrange(10):
+        for i in range(10):
             c = dict(test=i)
             db.insert(c)
             if i > 5:
@@ -455,7 +465,7 @@ class HashIndexTests:
         got = []
         while True:
             try:
-                d = gen.next()
+                d = next(gen)
             except StopIteration:
                 break
             else:
@@ -470,7 +480,7 @@ class HashIndexTests:
         got = []
         while True:
             try:
-                d = gen.next()
+                d = next(gen)
             except StopIteration:
                 break
             else:
@@ -484,7 +494,7 @@ class HashIndexTests:
         got = []
         while True:
             try:
-                d = gen.next()
+                d = next(gen)
             except StopIteration:
                 break
             else:
@@ -531,14 +541,14 @@ class HashIndexTests:
         db.set_indexes([UniqueHashIndex(db.path, 'id')])
         db.create()
         l = []
-        for i in xrange(inserts):
+        for i in range(inserts):
             c = dict(i=i)
             db.insert(c)
             l.append(c)
 
         assert db.count(db.all, 'id') == inserts
 
-        will_delete = random.randint(0, inserts / 15)
+        will_delete = random.randint(0, inserts // 15)
         for x in range(will_delete):
             to_delete = random.randint(0, len(l) - 1)
             db.delete(l.pop(to_delete))
@@ -561,7 +571,7 @@ class HashIndexTests:
         r = 0
         z = 0
         data = []
-        for i in xrange(inserts):
+        for i in range(inserts):
             a = random.randint(0, 10)
             if a > 5:
                 r += 1
@@ -588,7 +598,7 @@ class HashIndexTests:
 
         inserted = {}
 
-        for i in xrange(inserts):
+        for i in range(inserts):
             a = random.randint(1, 9)
             # a = 10
             if a > 5:
@@ -614,7 +624,9 @@ class HashIndexTests:
 
         _check()
 
-        d = inserted.values()[inserts / 2]
+        inserted_values = list(inserted.values())
+
+        d = inserted_values[inserts // 2]
         for curr_u in range(20):
             last_test = d['test']
             if last_test > 5:
@@ -629,10 +641,10 @@ class HashIndexTests:
             db.update(d)
         _check()
 
-        num = inserts / 10
+        num = inserts // 10
         num = num if num < 20 else 20
 
-        to_update = random.sample(inserted.values(), num)
+        to_update = random.sample(inserted_values, num)
         for d in to_update:
             for curr_u in range(10):
                 last_test = d['test']
@@ -648,7 +660,7 @@ class HashIndexTests:
                 db.update(d)
         _check()
 
-        to_update = random.sample(inserted.values(), num)
+        to_update = random.sample(inserted_values, num)
         for curr_u in range(10):
             for d in to_update:
                 last_test = d['test']
@@ -669,10 +681,10 @@ class HashIndexTests:
     def test_insert_on_deleted(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
-        a = db.insert(dict(_id='dd0604e2110d41e9a2ec630461ffd067'))
-        db.insert(dict(_id='892508163deb4da0b44e8a00802dc75a'))
+        a = db.insert(dict(_id=b'dd0604e2110d41e9a2ec630461ffd067'))
+        db.insert(dict(_id=b'892508163deb4da0b44e8a00802dc75a'))
         db.delete(a)
-        db.insert(dict(_id='d0a6e4e1aa74476a9012f9b8d7181a95'))
+        db.insert(dict(_id=b'd0a6e4e1aa74476a9012f9b8d7181a95'))
         db.get('id', '892508163deb4da0b44e8a00802dc75a')
 
         db.close()
@@ -686,7 +698,7 @@ class HashIndexTests:
         db.create()
         offset = inserts // 10 or 1
         real_inserts = inserts if inserts < 1000 else 1000
-        for x in xrange(real_inserts):
+        for x in range(real_inserts):
             db.insert(dict(test=x))
         assert real_inserts - offset == db.count(db.all, 'id', offset=offset)
         assert real_inserts - offset == db.count(db.all,

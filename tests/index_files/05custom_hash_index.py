@@ -26,6 +26,7 @@ class CustomHashIndex(HashIndex):
 
     def make_key_value(self, data):
         d = data.get('test')
+        print(d)
         if d is None:
             return None
         if d > 5:
@@ -35,4 +36,6 @@ class CustomHashIndex(HashIndex):
         return k, dict(test=d)
 
     def make_key(self, key):
-        return key
+        if not isinstance(key, str):
+            key = str(key)
+        return key.encode('utf8')

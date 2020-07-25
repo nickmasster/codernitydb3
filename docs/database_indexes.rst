@@ -426,7 +426,7 @@ Index functions
 ---------------
 
 
-Quite important thing in codernitydb3 are index functions. You can do with them anything you want they have access to database object, so they can perform operations on multiple indexes. If you want join like operation, you should write function. Then you will be able to run that function database side when using |codernitydb3-HTTP-link|. The only mandatory argument for that kind of function is ``db``, the rest are function arguments.
+Quite important thing in codernitydb3 are index functions. You can do with them anything you want they have access to database object, so they can perform operations on multiple indexes. If you want join like operation, you should write function. Then you will be able to run that function database side when using |CodernityDBHTTP-link|. The only mandatory argument for that kind of function is ``db``, the rest are function arguments.
 
 
 Writing function is easy see an example there:
@@ -456,7 +456,7 @@ Function should start it's name from ``run_`` then you can call it:
 
 
 
-As mentioned before, while you work in embedded mode it makes no big difference, but when using |codernitydb3-HTTP-link| it makes huge.
+As mentioned before, while you work in embedded mode it makes no big difference, but when using |CodernityDBHTTP-link| it makes huge.
 
 
 .. note::
@@ -656,7 +656,7 @@ Functions that you can use in ``make_key`` and ``make_key_value``:
     :rtype: set   
 
 .. note::
-    Obviously you can use that simple indexes in |codernitydb3-HTTP-link| without any problem.
+    Obviously you can use that simple indexes in |CodernityDBHTTP-link| without any problem.
 
 .. note::
     Error reporting / handling system in that mode will tell you exactly what's wrong with your code.
@@ -671,7 +671,7 @@ Tables, collections...?
 
 .. note::
 
-   In |codernitydb3-demos| you can find minitwit example which is rewrite from Sqlite application.
+   In |CodernityDBdemos| you can find minitwit example which is rewrite from Sqlite application.
 
 Sure! You can use Index mechanism do to it. As it has been mentioned before, Index mechanism in codernitydb3 is like read only Table in SQL databases (see :ref:`index design <database_design_index>`). So all you need is to define how your records will differ each other.
 

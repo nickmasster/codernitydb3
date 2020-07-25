@@ -11,11 +11,11 @@ codernitydb3 can be used in *embedded* mode or in server mode.
 HTTP
 -----
 
-Currently there is **HTTP** server released. Visit |codernitydb3-HTTP-link| for more information and documentation.
+Currently there is **HTTP** server released. Visit |CodernityDBHTTP-link| for more information and documentation.
 
 There exists also codernitydb3PyClient which is an HTTP server
 codernitydb3 client that behaves in the same way as *embedded*
-database. **You will need to add just 2 lines in your code to make use of it!** Visit |codernitydb3-PyClient-link| for more information and documentation.
+database. **You will need to add just 2 lines in your code to make use of it!** Visit |CodernityDBPyClient-link| for more information and documentation.
 
 
 .. note::

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +16,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from types import FunctionType, MethodType
 from threading import RLock
+from functools import wraps
 
+from codernitydb3.database import Database
+from codernitydb3.database_safe_shared import th_safe_gen
 from codernitydb3.env import cdb_environment
 
 cdb_environment['mode'] = "threads"
 cdb_environment['rlock_obj'] = RLock
-
-from database import Database
-
-from functools import wraps
-from types import FunctionType, MethodType
-
-from codernitydb3.database_safe_shared import th_safe_gen
 
 
 class SuperLock(type):
@@ -52,12 +50,12 @@ class SuperLock(type):
             for b_attr in dir(base):
                 a = getattr(base, b_attr, None)
                 if isinstance(a, MethodType) and not b_attr.startswith('_'):
-                    if b_attr == 'flush' or b_attr == 'flush_indexes':
+                    if b_attr in ('flush', 'flush_indexes'):
                         pass
                     else:
                         # setattr(base, b_attr, SuperLock.wrapper(a))
                         new_attr[b_attr] = SuperLock.wrapper(a)
-        for attr_name, attr_value in attr.iteritems():
+        for attr_name, attr_value in attr.items():
             if isinstance(attr_value,
                           FunctionType) and not attr_name.startswith('_'):
                 attr_value = SuperLock.wrapper(attr_value)
@@ -66,7 +64,7 @@ class SuperLock(type):
         return type.__new__(cls, classname, bases, new_attr)
 
 
-class SuperThreadSafeDatabase(Database):
+class SuperThreadSafeDatabase(Database, metaclass=SuperLock):
     """
     Thread safe version that always allows single thread to use db.
     It adds the same lock for all methods, so only one operation can be
@@ -75,9 +73,6 @@ class SuperThreadSafeDatabase(Database):
     """
 
     __metaclass__ = SuperLock
-
-    def __init__(self, *args, **kwargs):
-        super(SuperThreadSafeDatabase, self).__init__(*args, **kwargs)
 
     def __patch_index_gens(self, name):
         ind = self.indexes_names[name]
@@ -91,13 +86,13 @@ class SuperThreadSafeDatabase(Database):
 
     def open(self, *args, **kwargs):
         res = super(SuperThreadSafeDatabase, self).open(*args, **kwargs)
-        for name in self.indexes_names.iterkeys():
+        for name, _ in self.indexes_names.items():
             self.__patch_index_gens(name)
         return res
 
     def create(self, *args, **kwargs):
         res = super(SuperThreadSafeDatabase, self).create(*args, **kwargs)
-        for name in self.indexes_names.iterkeys():
+        for name, _ in self.indexes_names.items():
             self.__patch_index_gens(name)
             return res
 

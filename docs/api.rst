@@ -10,7 +10,7 @@ understand it. In other case you should visit:
 - :ref:`design`
 - :ref:`quick_tutorial`
 
-And you probably want to use |codernitydb3-HTTP-link| instead this embedded version.
+And you probably want to use |CodernityDBHTTP-link| instead this embedded version.
 
 Database
 --------

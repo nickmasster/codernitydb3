@@ -17,10 +17,10 @@
 
 from codernitydb3.database_super_thread_safe import SuperThreadSafeDatabase
 
-from shared import DB_Tests
-from hash_tests import HashIndexTests
-from tree_tests import TreeIndexTests
-from test_db_thread_safe import Test_Threads
+from .shared import DB_Tests
+from .hash_tests import HashIndexTests
+from .tree_tests import TreeIndexTests
+from .test_db_thread_safe import Test_Threads as Test_ThreadsSafe
 
 
 class Test_Database(DB_Tests):
@@ -38,6 +38,6 @@ class Test_TreeIndex(TreeIndexTests):
     _db = SuperThreadSafeDatabase
 
 
-class Test_Threads(Test_Threads):
+class Test_Threads(Test_ThreadsSafe):
 
     _db = SuperThreadSafeDatabase

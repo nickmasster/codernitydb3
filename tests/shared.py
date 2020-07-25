@@ -15,6 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+import os
+import random
+from hashlib import md5
+
 from codernitydb3.database import Database, RecordDeleted, RecordNotFound
 from codernitydb3.database import DatabaseException, RevConflict, DatabasePathException, DatabaseConflict, PreconditionsException, IndexConflict
 
@@ -26,11 +31,6 @@ from codernitydb3.tree_index import TreeBasedIndex, MultiTreeBasedIndex
 from codernitydb3.debug_stuff import database_step_by_step
 
 from codernitydb3 import rr_cache
-
-import pytest
-import os
-import random
-from hashlib import md5
 
 try:
     from collections import Counter
@@ -73,10 +73,17 @@ class Md5Index(HashIndex):
         super(Md5Index, self).__init__(*args, **kwargs)
 
     def make_key_value(self, data):
-        return md5(data['name']).digest(), None
+        a_val = data.get('a')
+        if a_val:
+            if not isinstance(a_val, str):
+                a_val = str(a_val)
+            return md5(a_val.encode('utf8')).digest(), None
+        return None
 
     def make_key(self, key):
-        return md5(key).digest()
+        if not isinstance(key, str):
+            key = str(key)
+        return md5(key.encode('utf8')).digest()
 
 
 class WithAIndex2(HashIndex):
@@ -84,20 +91,20 @@ class WithAIndex2(HashIndex):
         # kwargs['entry_line_format'] = '<32s32sIIcI'
         kwargs['key_format'] = '16s'
         kwargs['hash_lim'] = 4 * 1024
-        super(WithAIndex, self).__init__(*args, **kwargs)
+        super(WithAIndex2, self).__init__(*args, **kwargs)
 
     def make_key_value(self, data):
         a_val = data.get("a")
-        if a_val is not None:
-            if not isinstance(a_val, basestring):
+        if a_val:
+            if not isinstance(a_val, str):
                 a_val = str(a_val)
-                return md5(a_val).digest(), None
-                return None
+            return md5(a_val.encode('utf8')).digest(), None
+        return None
 
     def make_key(self, key):
-        if not isinstance(key, basestring):
+        if not isinstance(key, str):
             key = str(key)
-            return md5(key).digest()
+        return md5(key.encode('utf8')).digest()
 
 
 class WithAIndex(HashIndex):
@@ -108,17 +115,17 @@ class WithAIndex(HashIndex):
         super(WithAIndex, self).__init__(*args, **kwargs)
 
     def make_key_value(self, data):
-        a_val = data.get("a")
-        if a_val is not None:
-            if not isinstance(a_val, basestring):
+        a_val = data.get('a')
+        if a_val:
+            if not isinstance(a_val, str):
                 a_val = str(a_val)
-            return md5(a_val).digest(), None
-        return None
+            return md5(a_val.encode('utf8')).digest(), {}
+        return {}
 
     def make_key(self, key):
-        if not isinstance(key, basestring):
+        if not isinstance(key, str):
             key = str(key)
-        return md5(key).digest()
+        return md5(key.encode('utf8')).digest()
 
 
 class Simple_TreeIndex(TreeBasedIndex):
@@ -152,7 +159,7 @@ class WithRun_Index(HashIndex):
         vals = []
         while True:
             try:
-                d = gen.next()
+                d = next(gen)
             except StopIteration:
                 break
             else:
@@ -185,7 +192,7 @@ class WithRunEdit_Index(HashIndex):
         vals = []
         while True:
             try:
-                d = gen.next()
+                d = next(gen)
             except StopIteration:
                 break
             else:
@@ -205,8 +212,7 @@ class WithRunEdit_Index(HashIndex):
 
 class TreeMultiTest(MultiTreeBasedIndex):
 
-    custom_header = """from codernitydb3.tree_index import MultiTreeBasedIndex
-from itertools import izip"""
+    custom_header = """from codernitydb3.tree_index import MultiTreeBasedIndex"""
 
     def __init__(self, *args, **kwargs):
         kwargs['key_format'] = '16s'
@@ -217,17 +223,18 @@ from itertools import izip"""
         name = data['w']
         l = self.__l
         max_l = len(name)
-        out = set()
-        for x in xrange(l - 1, max_l):
+        out = []
+        for x in range(l - 1, max_l):
             m = (name, )
-            for y in xrange(0, x):
+            for y in range(0, x):
                 m += (name[y + 1:], )
-            out.update(set(''.join(x).rjust(16, '_').lower()
-                           for x in izip(*m)))  # ignore import error
+            for x in zip(*m):
+                v = ''.join(x).rjust(16, '_').lower()
+                out.append(v.encode('utf8'))
         return out, dict(name=name)
 
     def make_key(self, key):
-        return key.rjust(16, '_').lower()
+        return key.rjust(16, '_').lower().encode('utf8')
 
 
 class MajorIndexTest(TreeBasedIndex):
@@ -239,7 +246,7 @@ class MajorIndexTest(TreeBasedIndex):
         return self.make_key(data['a']), None
 
     def make_key(self, key):
-        return key.rjust(50, '_').lower()
+        return key.rjust(50, '_').lower().encode('utf8')
 
 
 class MinorIndexTest(MajorIndexTest):
@@ -252,6 +259,9 @@ class MinorIndexTest(MajorIndexTest):
 
 
 class DB_Tests:
+
+    _db = Database
+
     def setup_method(self, method):
         self.counter = Counter()
 
@@ -261,7 +271,7 @@ class DB_Tests:
         doc = dict(a=1)
         db.insert(doc)
         doc2 = doc.copy()
-        doc2['_rev'] = '00000000'
+        doc2['_rev'] = b'00000000'
         with pytest.raises(RevConflict):
             db.update(doc2)
 
@@ -281,7 +291,7 @@ class DB_Tests:
         db.set_indexes([UniqueHashIndex(db.path, 'id')])
         db.create()
         l = []
-        for i in xrange(5):
+        for i in range(5):
             c = dict(i=i)
             db.insert(c)
             l.append(c)
@@ -291,7 +301,7 @@ class DB_Tests:
         db2 = self._db(os.path.join(str(tmpdir), 'db'))
         # db2.set_indexes([UniqueHashIndex(db.path, 'id')])
         db2.open()
-        for j in xrange(5):
+        for j in range(5):
             assert l[j] == db2.get('id', l[j]['_id'])
         db2.close()
 
@@ -299,7 +309,7 @@ class DB_Tests:
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.set_indexes([UniqueHashIndex(db.path, 'id')])
         db.create()
-        for i in xrange(5):
+        for i in range(5):
             db.insert(dict(i=i))
         db.destroy()
         db = self._db(os.path.join(str(tmpdir), 'db'))
@@ -359,7 +369,7 @@ class DB_Tests:
             return True
 
         def _update():
-            vals = inserted.values()
+            vals = list(inserted.values())
             if not vals:
                 return False
             doc = random.choice(vals)
@@ -382,7 +392,7 @@ class DB_Tests:
             return True
 
         def _delete():
-            vals = inserted.values()
+            vals = list(inserted.values())
             if not vals:
                 return False
             doc = random.choice(vals)
@@ -401,7 +411,7 @@ class DB_Tests:
             return True
 
         def _get():
-            vals = inserted.values()
+            vals = list(inserted.values())
             if not vals:
                 return False
             doc = random.choice(vals)
@@ -437,7 +447,7 @@ class DB_Tests:
 
         fcts = (_insert, ) * 20 + (_get, ) * 10 + (_update, ) * 10 + (
             _delete, ) * 5
-        for i in xrange(operations):
+        for i in range(operations):
             f = random.choice(fcts)
             f()
 
@@ -450,7 +460,7 @@ class DB_Tests:
 
         fcts = (_insert, ) * 20 + (_get, ) * 10 + (_update, ) * 10 + (
             _delete, ) * 5
-        for i in xrange(operations):
+        for i in range(operations):
             f = random.choice(fcts)
             f()
 
@@ -489,11 +499,13 @@ class DB_Tests:
         new_index = WithAIndex(db.path, 'withA_index')
         db.add_index(new_index)
 
-        for y in range(100):
-            db.insert(dict(y=y))
+        for y in range(1, 101):
+            db.insert(dict(a=y))
 
-        for index in ('id', 'hash_index', 'md5_index', 'withA_index'):
-            elements = db.all('hash_index')
+        for index in ['id', 'hash_index', 'md5_index', 'withA_index']:
+            elements = db.all(index)
+            # l = len(list(elements))
+            # print('length: ', l)
             assert len(list(elements)) == 100
 
     def test_add_duplicate_index_throws_exception(self, tmpdir):
@@ -523,7 +535,7 @@ class DB_Tests:
         assert len(db.indexes) == len(file_names) + 1  # 'id' + from files
 
         for y in range(100):
-            db.insert(dict(a='blah', test='blah', name=str(y), y=y))
+            db.insert(dict(a='blah', test=y, name=str(y), y=y))
 
         for index_name in indexes_names:
             assert db.count(db.all, index_name) == 100
@@ -571,7 +583,7 @@ class DB_Tests:
             db.destroy_index(index_name)
 
             assert not file_exists_in_indexes_dir(index_name)
-            print file_exists_in_indexes_dir(index_name)
+            print(file_exists_in_indexes_dir(index_name))
             with pytest.raises(IndexNotFoundException):
                 db.get_index_details(index_name)
 #        with instance
@@ -588,7 +600,7 @@ class DB_Tests:
             db.destroy_index(index_to_destory)
 
             assert not file_exists_in_indexes_dir(index_name)
-            print file_exists_in_indexes_dir(index_name)
+            print(file_exists_in_indexes_dir(index_name))
             with pytest.raises(IndexNotFoundException):
                 db.get_index_details(index_name)
 
@@ -609,7 +621,7 @@ class DB_Tests:
                 db.destroy_index(klass(db.path, klass.__name__))
 
             assert file_exists_in_indexes_dir(index_name)
-            print file_exists_in_indexes_dir(index_name)
+            print(file_exists_in_indexes_dir(index_name))
             assert db.get_index_details(index_name)
 
     def test_removing_index_from_db_2(self, tmpdir):
@@ -795,13 +807,13 @@ class DB_Tests:
         db.set_indexes([ind_id])
         db.create()
         l = []
-        for i in xrange(10):
+        for i in range(10):
             c = dict(i=i)
             c.update(db.insert(c))
             l.append(c)
 
 #        with name
-        for i in xrange(10):
+        for i in range(10):
             curr = l[i]
             c = db.get("id", curr['_id'])
             c['update'] = True
@@ -815,7 +827,7 @@ class DB_Tests:
             assert c['i'] == j
 
 #        with instance
-        for i in xrange(10):
+        for i in range(10):
             curr = l[i]
             c = db.get("id", curr['_id'])
             c['update'] = True
@@ -830,7 +842,7 @@ class DB_Tests:
             assert c['i'] == j
 
 #        with different instance
-        for i in xrange(10):
+        for i in range(10):
             curr = l[i]
             c = db.get("id", curr['_id'])
             c['update'] = True
@@ -860,7 +872,7 @@ class DB_Tests:
         db.create()
 
         l = []
-        for i in xrange(100):
+        for i in range(100):
             c = dict(i=i)
             db.insert(c)
             l.append(c)
@@ -927,7 +939,7 @@ class DB_Tests:
     def test_add_new_index_update_before_reindex_new_value(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
-        for x in xrange(20):
+        for x in range(20):
             db.insert(dict(t=x, test=x))
         el = db.insert(dict(t=1, test=1))
         el['new_data'] = 'new'
@@ -940,7 +952,7 @@ class DB_Tests:
     def test_add_new_index_update_before_reindex_old_value(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
-        for x in xrange(20):
+        for x in range(20):
             db.insert(dict(t=x, test=x))
         el = db.insert(dict(t=1, test=1))
         el['new_data'] = 'new'
@@ -952,7 +964,7 @@ class DB_Tests:
     def test_add_new_index_delete_before_reindex(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
-        for x in xrange(20):
+        for x in range(20):
             db.insert(dict(t=x, a=x))
         el = db.insert(dict(t=1, a=1))
         #        el['new_data']='new'
@@ -964,7 +976,7 @@ class DB_Tests:
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
         db.add_index(WithRun_Index(db.path, 'run'))
-        for x in xrange(20):
+        for x in range(20):
             db.insert(dict(a=x % 2, x=x))
         assert db.run('run', 'sum', 0) == 90
         assert db.run('run', 'sum', 1) == 100
@@ -979,7 +991,7 @@ class DB_Tests:
     def test_get_error(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
-        _id = md5('test').hexdigest()
+        _id = md5(b'test').hexdigest()
         with pytest.raises(RecordNotFound):
             db.get('id', _id)
         db.insert(dict(_id=_id, test='test'))
@@ -990,7 +1002,7 @@ class DB_Tests:
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
         db.add_index(WithRun_Index(db.path, 'run'))
-        for x in xrange(20):
+        for x in range(20):
             db.insert(dict(a=x % 2, x=x))
         assert db.run('run', 'sum', 0) == 90
         assert db.run('run', 'sum', 1) == 100
@@ -1047,10 +1059,17 @@ class DB_Tests:
                 super(IndentedMd5Index, self).__init__(*args, **kwargs)
 
             def make_key_value(self, data):
-                return md5(data['name']).digest(), None
+                name = data.get('name')
+                if name is not None:
+                    if not isinstance(name, str):
+                        name = str(name)
+                    return md5(name.encode('utf8')).digest(), None
+                return None
 
             def make_key(self, key):
-                return md5(key).digest()
+                if not isinstance(key, str):
+                    key = str(key)
+                return md5(key.encode('utf8')).digest()
 
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
@@ -1064,7 +1083,7 @@ class DB_Tests:
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
         patch_flush_fsync(db)  # patch it
-        for x in xrange(100):
+        for x in range(100):
             db.insert(dict(x=x))
         db.close()
 
@@ -1087,7 +1106,7 @@ x * 10, None
 """
         db.add_index(ok)
 
-        for x in xrange(10):
+        for x in range(10):
             db.insert(dict(x=x))
 
         a = sum(map(lambda x: x['key'], db.all('test_revert')))
@@ -1117,8 +1136,8 @@ x * 10, None
         ind = db2.indexes_names['minor']
         assert ind.key_format == '50s'
 
-        for y in xrange(5):
-            for x in xrange(1, 10):
+        for y in range(5):
+            for x in range(1, 10):
                 for l in 'abcd':
                     db2.insert({'a': l * x})
 

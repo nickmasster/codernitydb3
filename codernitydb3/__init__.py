@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +16,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-__version__ = '0.5.0'
-__license__ = "Apache 2.0"
+__version__ = '0.6.0'
+__license__ = 'Apache 2.0'

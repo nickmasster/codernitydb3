@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +16,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from codernitydb3.database import Database
 import shutil
 import os
+from codernitydb3.database import Database
 
 
 def migrate(source, destination):

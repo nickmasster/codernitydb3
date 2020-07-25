@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +15,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Storage module"""
 
 import os
 import struct
-import shutil
 import marshal
 import io
 
@@ -31,7 +32,7 @@ class StorageException(Exception):
     pass
 
 
-class DummyStorage(object):
+class DummyStorage:
     """
     Storage mostly used to fake real storage
     """
@@ -80,13 +81,16 @@ class IU_Storage(object):
         self.db_path = db_path
         self.name = name
         self._header_size = 100
+        self._f = None
 
     def create(self):
         if os.path.exists(os.path.join(self.db_path, self.name + "_stor")):
             raise IOError("Storage already exists!")
         with io.open(os.path.join(self.db_path, self.name + "_stor"),
                      'wb') as f:
-            f.write(struct.pack("10s90s", self.__version__, '|||||'))
+            f.write(
+                struct.pack("10s90s", self.__version__.encode('utf8'),
+                            b'|||||'))
             f.close()
         self._f = io.open(os.path.join(self.db_path, self.name + "_stor"),
                           'r+b',
@@ -135,10 +139,9 @@ class IU_Storage(object):
     def get(self, start, size, status='c'):
         if status == 'd':
             return None
-        else:
-            print locals()
-            self._f.seek(start)
-            return self.data_from(self._f.read(size))
+        print(locals())
+        self._f.seek(start)
+        return self.data_from(self._f.read(size))
 
     def flush(self):
         self._f.flush()

@@ -14,12 +14,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from shared import DB_Tests
 from codernitydb3.database import Database
-from hash_tests import HashIndexTests
-from tree_tests import TreeIndexTests
-from shard_tests import ShardTests
+
+from .shared import DB_Tests
+from .hash_tests import HashIndexTests
+from .tree_tests import TreeIndexTests
+from .shard_tests import ShardTests
 
 
 class Test_Database(DB_Tests):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +16,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from codernitydb3.tree_index import TreeBasedIndex
 import struct
 import os
-
-import inspect
-from functools import wraps
 import json
+import inspect
+import pickle
+from functools import wraps
+
+from codernitydb3.tree_index import TreeBasedIndex
 
 
 class DebugTreeBasedIndex(TreeBasedIndex):
@@ -29,41 +31,40 @@ class DebugTreeBasedIndex(TreeBasedIndex):
         super(DebugTreeBasedIndex, self).__init__(*args, **kwargs)
 
     def print_tree(self):
-        print '-----CURRENT TREE-----'
-        print self.root_flag
+        print('-----CURRENT TREE-----')
+        print(self.root_flag)
 
         if self.root_flag == 'l':
-            print '---ROOT---'
+            print('---ROOT---')
             self._print_leaf_data(self.data_start)
             return
-        else:
-            print '---ROOT---'
-            self._print_node_data(self.data_start)
-            nr_of_el, children_flag = self._read_node_nr_of_elements_and_children_flag(
-                self.data_start)
-            nodes = []
-            for index in range(nr_of_el):
-                l_pointer, key, r_pointer = self._read_single_node_key(
-                    self.data_start, index)
-                nodes.append(l_pointer)
-            nodes.append(r_pointer)
-            print 'ROOT NODES', nodes
-            while children_flag == 'n':
-                self._print_level(nodes, 'n')
-                new_nodes = []
-                for node in nodes:
-                    nr_of_el, children_flag = \
-                        self._read_node_nr_of_elements_and_children_flag(node)
-                    for index in range(nr_of_el):
-                        l_pointer, key, r_pointer = self._read_single_node_key(
-                            node, index)
-                        new_nodes.append(l_pointer)
-                    new_nodes.append(r_pointer)
-                nodes = new_nodes
-            self._print_level(nodes, 'l')
+        print('---ROOT---')
+        self._print_node_data(self.data_start)
+        nr_of_el, children_flag = self._read_node_nr_of_elements_and_children_flag(
+            self.data_start)
+        nodes = []
+        for index in range(nr_of_el):
+            l_pointer, key, r_pointer = self._read_single_node_key(
+                self.data_start, index)
+            nodes.append(l_pointer)
+        nodes.append(r_pointer)
+        print('ROOT NODES', nodes)
+        while children_flag == 'n':
+            self._print_level(nodes, 'n')
+            new_nodes = []
+            for node in nodes:
+                nr_of_el, children_flag = \
+                    self._read_node_nr_of_elements_and_children_flag(node)
+                for index in range(nr_of_el):
+                    l_pointer, key, r_pointer = self._read_single_node_key(
+                        node, index)
+                    new_nodes.append(l_pointer)
+                new_nodes.append(r_pointer)
+            nodes = new_nodes
+        self._print_level(nodes, 'l')
 
     def _print_level(self, nodes, flag):
-        print '---NEXT LVL---'
+        print('---NEXT LVL---')
         if flag == 'n':
             for node in nodes:
                 self._print_node_data(node)
@@ -72,7 +73,7 @@ class DebugTreeBasedIndex(TreeBasedIndex):
                 self._print_leaf_data(node)
 
     def _print_leaf_data(self, leaf_start_position):
-        print 'printing data of leaf at', leaf_start_position
+        print('printing data of leaf at', leaf_start_position)
         nr_of_elements = self._read_leaf_nr_of_elements(leaf_start_position)
         self.buckets.seek(leaf_start_position)
         data = self.buckets.read(self.leaf_heading_size +
@@ -80,11 +81,11 @@ class DebugTreeBasedIndex(TreeBasedIndex):
         leaf = struct.unpack(
             '<' + self.leaf_heading_format +
             nr_of_elements * self.single_leaf_record_format, data)
-        print leaf
-        print
+        print(leaf)
+        print()
 
     def _print_node_data(self, node_start_position):
-        print 'printing data of node at', node_start_position
+        print('printing data of node at', node_start_position)
         nr_of_elements = self._read_node_nr_of_elements_and_children_flag(
             node_start_position)[0]
         self.buckets.seek(node_start_position)
@@ -94,8 +95,8 @@ class DebugTreeBasedIndex(TreeBasedIndex):
         node = struct.unpack(
             '<' + self.node_heading_format + self.pointer_format +
             nr_of_elements * (self.key_format + self.pointer_format), data)
-        print node
-        print
+        print(node)
+        print()
 
 
 # ------------------>
@@ -138,15 +139,19 @@ def database_step_by_step(db_obj, path=None):
                 try:
                     res = f(*args, **kwargs)
                 except:
-                    packed = json.dumps(
+                    packed = pickle.dumps(
                         (funct_name, meth_args, kwargs_copy, None))
-                    f_obj.write('%s\n' % packed)
+                    # packed = json.dumps(
+                    #     (funct_name, meth_args, kwargs_copy, None))
+                    f_obj.write(b'%s\n' % packed)
                     f_obj.flush()
                     raise
                 else:
-                    packed = json.dumps(
+                    packed = pickle.dumps(
                         (funct_name, meth_args, kwargs_copy, res))
-                f_obj.write('%s\n' % packed)
+                    # packed = json.dumps(
+                    #     (funct_name, meth_args, kwargs_copy, res))
+                f_obj.write(b'%s\n' % packed)
                 f_obj.flush()
             else:
                 if funct_name == 'get':
@@ -155,8 +160,8 @@ def database_step_by_step(db_obj, path=None):
                                 in curr) and not curr.startswith('test'):
                             remove_from_stack(funct_name)
                             return f(*args, **kwargs)
-                packed = json.dumps((funct_name, meth_args, kwargs_copy))
-                f_obj.write('%s\n' % packed)
+                packed = pickle.dumps((funct_name, meth_args, kwargs_copy))
+                f_obj.write(b'%s\n' % packed)
                 f_obj.flush()
                 res = f(*args, **kwargs)
             remove_from_stack(funct_name)
@@ -176,7 +181,7 @@ def database_from_steps(db_obj, path):
     # db_obj.insert=lambda data : insert_for_debug(db_obj, data)
     with open(path, 'rb') as f_obj:
         for current in f_obj:
-            line = json.loads(current[:-1])
+            line = pickle.loads(current[:-1])
             if line[0] == 'count':
                 obj = getattr(db_obj, line[1][0])
                 line[1] = [obj] + line[1][1:]

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,22 +16,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from random import getrandbits, randrange
 import uuid
+from random import getrandbits, randrange
 
 
 class NONE:
-
     """
     It's inteded to be None but different,
     for internal use only!
     """
-    pass
 
 
 def random_hex_32():
-    return uuid.UUID(int=getrandbits(128), version=4).hex
+    return uuid.UUID(int=getrandbits(128), version=4).hex.encode('utf8')
 
 
 def random_hex_4(*args, **kwargs):
-    return '%04x' % randrange(256 ** 2)
+    s = '%04x' % randrange(256**2)
+    return s.encode('utf8')

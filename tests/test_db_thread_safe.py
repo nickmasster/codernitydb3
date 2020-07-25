@@ -15,16 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from codernitydb3.database_thread_safe import ThreadSafeDatabase
-from shared import DB_Tests, WithAIndex
-from hash_tests import HashIndexTests
-from tree_tests import TreeIndexTests
-
-from threading import Thread
 import os
 import time
 import random
 import pytest
+from threading import Thread
+
+from codernitydb3.database_thread_safe import ThreadSafeDatabase
+
+from .shared import DB_Tests, WithAIndex
+from .hash_tests import HashIndexTests
+from .tree_tests import TreeIndexTests
 
 
 class Test_Database(DB_Tests):
@@ -42,7 +43,7 @@ class Test_TreeIndex(TreeIndexTests):
     _db = ThreadSafeDatabase
 
 
-class Test_Threads(object):
+class Test_Threads:
 
     _db = ThreadSafeDatabase
 
@@ -51,16 +52,16 @@ class Test_Threads(object):
         db.create()
         db.add_index(WithAIndex(db.path, 'with_a'))
         ths = []
-        for x in xrange(100):
+        for x in range(1, 101):
             ths.append(Thread(target=db.insert, args=(dict(a=x), )))
         for th in ths:
             th.start()
         for th in ths:
             th.join()
         assert db.count(db.all, 'with_a') == 100
-        l = range(100)
+        l = list(range(1, 101))
         for curr in db.all('with_a', with_doc=True):
-            print curr
+            print(curr)
             a = curr['doc']['a']
             l.remove(a)
         assert l == []
@@ -75,26 +76,23 @@ class Test_Threads(object):
 
         def updater():
             i = 0
-            time.sleep(random.random() / 100)
+            time.sleep(random.random() // 100)
             while True:
                 rec = list(db.all('id', limit=1))
                 doc = rec[0].copy()
                 doc['a'] += 1
                 try:
                     db.update(doc)
-
-
-#                    pass
                 except:
                     i += 1
                     if i > 100:
                         return False
-                    time.sleep(random.random() / 100)
+                    time.sleep(random.random() // 100)
                 else:
                     return True
 
         ths = []
-        for x in xrange(threads_num):  # python threads... beware!!!
+        for x in range(threads_num):  # python threads... beware!!!
             ths.append(Thread(target=updater))
         for th in ths:
             th.start()

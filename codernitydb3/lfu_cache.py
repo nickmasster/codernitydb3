@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +16,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import functools
 from heapq import nsmallest
 from operator import itemgetter
@@ -24,6 +24,7 @@ from collections import defaultdict
 try:
     from collections import Counter
 except ImportError:
+
     class Counter(dict):
 
         'Mapping where default values are zero'
@@ -47,7 +48,7 @@ def cache1lvl(maxsize=100):
             except KeyError:
                 if len(cache) == maxsize:
                     for k, _ in nsmallest(maxsize // 10 or 1,
-                                          use_count.iteritems(),
+                                          use_count.items(),
                                           key=itemgetter(1)):
                         del cache[k], use_count[k]
                 cache[key] = user_function(key, *args, **kwargs)
@@ -74,12 +75,13 @@ def cache1lvl(maxsize=100):
         wrapper.cache = cache
         wrapper.delete = delete
         return wrapper
+
     return decorating_function
 
 
-def twolvl_iterator(dict):
-    for k, v in dict.iteritems():
-        for kk, vv in v.iteritems():
+def twolvl_iterator(d):
+    for k, v in d.items():
+        for kk, vv in v.items():
             yield k, kk, vv
 
 
@@ -93,7 +95,7 @@ def cache2lvl(maxsize=100):
 
         @functools.wraps(user_function)
         def wrapper(*args, **kwargs):
-#            return user_function(*args, **kwargs)
+            #            return user_function(*args, **kwargs)
             try:
                 result = cache[args[0]][args[1]]
             except KeyError:
@@ -149,4 +151,5 @@ def cache2lvl(maxsize=100):
         wrapper.delete = delete
         wrapper.cache_size = 0
         return wrapper
+
     return decorating_function

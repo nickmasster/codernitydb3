@@ -33,8 +33,8 @@ Currently there are implemented 4 different databases
    block writers etc. GeventDatabase is 1:1 copy of that database.
 3. DatabaseSuperThreadSafe - a database to also use with threads, but
    database operations are limited to only one in given time.
-4. codernitydb3-HTTP - a HTTP server version of database, for multi
-   thread and multi process environments. |codernitydb3-HTTP-link|.
+4. CodernityDBHTTP - a HTTP server version of database, for multi
+   thread and multi process environments. |CodernityDBHTTP-link|.
 
 .. attention::
 

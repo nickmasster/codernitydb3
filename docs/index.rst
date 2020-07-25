@@ -7,7 +7,7 @@ codernitydb3 is opensource, pure Python (no 3rd party dependency), fast (even 10
     :align: center
 
 
-You can also call it a more advanced key-value database, with multiple key-values indexes in the same engine (for sure it's not "simple key/value store"). Also codernitydb3 supports functions that are executed inside database. It has optional support for HTTP server version (|codernitydb3-HTTP-link|), and also Python client library (|codernitydb3-PyClient-link|) that aims to be 100% compatible with embedded version.
+You can also call it a more advanced key-value database, with multiple key-values indexes in the same engine (for sure it's not "simple key/value store"). Also codernitydb3 supports functions that are executed inside database. It has optional support for HTTP server version (|CodernityDBHTTP-link|), and also Python client library (|CodernityDBPyClient-link|) that aims to be 100% compatible with embedded version.
 
 **And it's** `Apache 2.0`_ **licensed !**
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,46 +17,36 @@
 # limitations under the License.
 
 from setuptools import setup
-import os
 
+from codernitydb3 import __version__, __license__
 
-def get_meta(inc, name):
-    import re
-    return eval(re.search(r'(?:%s)\s*=\s*(.*)' % name, inc).group(1))
+with open('README.rst') as fhd:
+    L_DESCR = fhd.read()
 
+keywords = ' '.join(('database', 'python', 'nosql', 'key-value', 'key/value',
+                     'db', 'embedded'))
 
-with open(os.path.join("CodernityDB", '__init__.py'), 'r') as _init:
-    _init_d = _init.read()
-
-__version__ = get_meta(_init_d, '__version__')
-__license__ = get_meta(_init_d, '__license__')
-
-
-with open('README') as f:
-    L_DESCR = f.read()
-
-
-keywords = ' '.join(('database', 'python', 'nosql', 'key-value', 'key/value', 'db'))
-
-setup(name='CodernityDB',
+setup(name='codernitydb3',
       version=__version__,
-      description="Pure python, fast, schema-less, NoSQL database",
+      description='Pure python, embedded, fast, schema-less, NoSQL database',
       long_description=L_DESCR,
+      long_description_content_type='text/x-rst',
       keywords=keywords,
-      author='Codernity',
-      author_email='contact@codernity.com',
-      url='http://labs.codernity.com/codernitydb',
-      packages=['CodernityDB'],
-      platforms='any',
+      author='Nick M.',
+      author_email='nickmasster@users.noreply.github.com',
+      url='https://github.com/nickmasster/codernitydb3',
+      packages=['codernitydb3'],
       license=__license__,
       classifiers=[
-          "License :: OSI Approved :: Apache Software License",
-          "Programming Language :: Python",
-          "Programming Language :: Python :: 2.6",
-          "Programming Language :: Python :: 2.7",
-          "Operating System :: OS Independent",
-          "Topic :: Internet",
-          "Topic :: Database",
-          "Topic :: Software Development",
-          "Intended Audience :: Developers",
-          "Development Status :: 4 - Beta"])
+          'Development Status :: 4 - Beta', 'Intended Audience :: Developers',
+          'License :: OSI Approved :: Apache Software License',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python :: 3 :: Only',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8', 'Topic :: Database',
+          'Topic :: Database :: Database Engines/Servers', 'Topic :: Internet',
+          'Topic :: Software Development'
+      ],
+      python_requires='>=3.5')

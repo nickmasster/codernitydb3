@@ -203,7 +203,7 @@ Example database functions
 Join like 1
 """""""""""
 
-It will join user with timeline entries. See |codernitydb3-Demos| ``minitwitt`` to see more things like this.
+It will join user with timeline entries. See |CodernityDBDemos| ``minitwitt`` to see more things like this.
 
 .. code-block:: python
 

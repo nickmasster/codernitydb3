@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +16,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from codernitydb3.env import cdb_environment
-from codernitydb3.database import PreconditionsException, RevConflict, Database
-# from database import Database
-
 from collections import defaultdict
 from functools import wraps
 from types import MethodType
+
+from codernitydb3.env import cdb_environment
+from codernitydb3.database import PreconditionsException, RevConflict, Database
 
 
 class th_safe_gen:
@@ -31,11 +31,11 @@ class th_safe_gen:
         self.name = name
 
     def __iter__(self):
-        return self
+        return th_safe_gen(self.name, self.__gen)
 
-    def next(self):
+    def __next__(self):
         with self.lock:
-            return self.__gen.next()
+            return next(self.__gen)
 
     @staticmethod
     def wrapper(method, index_name, meth_name, l=None):
@@ -94,14 +94,14 @@ class SafeDatabase(Database):
     def initialize(self, *args, **kwargs):
         with self.close_open_lock:
             res = super(SafeDatabase, self).initialize(*args, **kwargs)
-            for name in self.indexes_names.iterkeys():
+            for name, _ in self.indexes_names.items():
                 self.indexes_locks[name] = cdb_environment['rlock_obj']()
             return res
 
     def open(self, *args, **kwargs):
         with self.close_open_lock:
             res = super(SafeDatabase, self).open(*args, **kwargs)
-            for name in self.indexes_names.iterkeys():
+            for name, _ in self.indexes_names.items():
                 self.indexes_locks[name] = cdb_environment['rlock_obj']()
                 self.__patch_index(name)
             return res
@@ -109,7 +109,7 @@ class SafeDatabase(Database):
     def create(self, *args, **kwargs):
         with self.close_open_lock:
             res = super(SafeDatabase, self).create(*args, **kwargs)
-            for name in self.indexes_names.iterkeys():
+            for name, _ in self.indexes_names.items():
                 self.indexes_locks[name] = cdb_environment['rlock_obj']()
                 self.__patch_index(name)
             return res
@@ -156,7 +156,7 @@ class SafeDatabase(Database):
             self.main_lock.release()
 
     def reindex_index(self, index, *args, **kwargs):
-        if isinstance(index, basestring):
+        if isinstance(index, str):
             if not index in self.indexes_names:
                 raise PreconditionsException("No index named %s" % index)
             index = self.indexes_names[index]

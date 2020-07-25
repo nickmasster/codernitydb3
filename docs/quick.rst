@@ -121,7 +121,7 @@ There are two ways to do it:
     :linenos:
 
 Using that function *inside database* will perform much better when
-you will use |codernitydb3-HTTP-link| because then calculations will be
+you will use |CodernityDBHTTP-link| because then calculations will be
 done server side. It will also allow you to reuse the same logic code
 in different places.
 
@@ -129,7 +129,7 @@ In that examples we assumed that ``t`` value is not stored in our
 ``X`` index.
 
 .. note::
-   If you're |codernitydb3-HTTP-link| with |codernitydb3-PyClient-link|
+   If you're |CodernityDBHTTP-link| with |CodernityDBPyClient-link|
    you should just change Database initialization (set host & port).
 
 

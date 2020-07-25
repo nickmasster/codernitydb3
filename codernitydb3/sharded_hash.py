@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2020 Nick M. (https://github.com/nickmasster)
 # Copyright 2011-2013 Codernity (http://codernity.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +16,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
+from random import getrandbits
+
 from codernitydb3.hash_index import UniqueHashIndex, HashIndex
 from codernitydb3.sharded_index import ShardedIndex
 from codernitydb3.index import IndexPreconditionsException
-
-from random import getrandbits
-import uuid
 
 
 class IU_ShardedUniqueHashIndex(ShardedIndex):
@@ -68,27 +69,28 @@ from codernitydb3.sharded_index import ShardedIndex
             trg = 0
         self.last_used = trg
         h = '%02x%30s' % (trg, h[2:])
-        return h
+        return h.encode('utf8')
 
     def delete(self, key, *args, **kwargs):
-        trg_shard = key[:2]
+        trg_shard = self.make_key(key[:2])
         op = self.shards_r[trg_shard]
         return op.delete(key, *args, **kwargs)
 
     def update(self, key, *args, **kwargs):
-        trg_shard = key[:2]
+        trg_shard = self.make_key(key[:2])
         self.last_used = int(trg_shard, 16)
         op = self.shards_r[trg_shard]
         return op.update(key, *args, **kwargs)
 
     def insert(self, key, *args, **kwargs):
-        trg_shard = key[:2]  # in most cases it's in create_key BUT not always
+        trg_shard = self.make_key(
+            key[:2])  # in most cases it's in create_key BUT not always
         self.last_used = int(key[:2], 16)
         op = self.shards_r[trg_shard]
         return op.insert(key, *args, **kwargs)
 
     def get(self, key, *args, **kwargs):
-        trg_shard = key[:2]
+        trg_shard = self.make_key(key[:2])
         self.last_used = int(trg_shard, 16)
         op = self.shards_r[trg_shard]
         return op.get(key, *args, **kwargs)
