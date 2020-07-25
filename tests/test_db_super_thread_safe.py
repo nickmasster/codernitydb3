@@ -15,8 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from CodernityDB.database_super_thread_safe import SuperThreadSafeDatabase
+from codernitydb3.database_super_thread_safe import SuperThreadSafeDatabase
 
 from shared import DB_Tests
 from hash_tests import HashIndexTests

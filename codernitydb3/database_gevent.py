@@ -15,22 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from threading import RLock
+from gevent.lock import RLock
 
-from CodernityDB.env import cdb_environment
+from codernitydb3.env import cdb_environment
 
-cdb_environment['mode'] = "threads"
+cdb_environment['mode'] = "gevent"
 cdb_environment['rlock_obj'] = RLock
 
+# from codernitydb3.database import Database
+from codernitydb3.database_safe_shared import SafeDatabase
 
-from database_safe_shared import SafeDatabase
 
-
-class ThreadSafeDatabase(SafeDatabase):
-
-    """
-    Thread safe version of CodernityDB that uses several lock objects,
-    on different methods / different indexes etc. It's completely different
-    implementation of locking than SuperThreadSafe one.
-    """
+class GeventDatabase(SafeDatabase):
     pass

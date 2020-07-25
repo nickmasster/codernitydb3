@@ -12,15 +12,13 @@ from hashlib import md5
 
 # custom db code start
 
-
 # custom index code start
-from CodernityDB import rr_cache
+from codernitydb3 import rr_cache
 # source of classes in index.classes_code
 # index code start
 
 
 class CustomHashIndex(HashIndex):
-
     def __init__(self, *args, **kwargs):
         kwargs['entry_line_format'] = '32sIIIcI'
         kwargs['hash_lim'] = 1

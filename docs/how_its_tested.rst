@@ -7,11 +7,11 @@ How it's tested
 We use pytest_ with  pytest-xdist_ to distribute the tests to multiple
 CPUs.
 
-What's also worth to note, we tests CodernityDB on python 2.6.x,
+What's also worth to note, we tests codernitydb3 on python 2.6.x,
 2.7.x, pypy (1.9 and dev branch) using Tox_, and Jenkins_ takes care about continuous testing process.
 
-All major parts of CodernityDB has their own test suite. We also test
-CodernityDB single-thread, multiple-thread (thread-safe, and
+All major parts of codernitydb3 has their own test suite. We also test
+codernitydb3 single-thread, multiple-thread (thread-safe, and
 super-thread-safe) and the gevent one.
 
 There are some patch mechanizm / locks  so running the test suite in wrong

@@ -15,10 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from threading import RLock
 
-from CodernityDB.env import cdb_environment
+from codernitydb3.env import cdb_environment
 
 cdb_environment['mode'] = "threads"
 cdb_environment['rlock_obj'] = RLock
@@ -28,23 +27,23 @@ from database import Database
 from functools import wraps
 from types import FunctionType, MethodType
 
-from CodernityDB.database_safe_shared import th_safe_gen
+from codernitydb3.database_safe_shared import th_safe_gen
 
 
 class SuperLock(type):
-
     @staticmethod
     def wrapper(f):
         @wraps(f)
         def _inner(*args, **kwargs):
             db = args[0]
             with db.super_lock:
-#                print '=>', f.__name__, repr(args[1:])
+                #                print '=>', f.__name__, repr(args[1:])
                 res = f(*args, **kwargs)
-#                if db.opened:
-#                    db.flush()
-#                print '<=', f.__name__, repr(args[1:])
+                #                if db.opened:
+                #                    db.flush()
+                #                print '<=', f.__name__, repr(args[1:])
                 return res
+
         return _inner
 
     def __new__(cls, classname, bases, attr):
@@ -59,7 +58,8 @@ class SuperLock(type):
                         # setattr(base, b_attr, SuperLock.wrapper(a))
                         new_attr[b_attr] = SuperLock.wrapper(a)
         for attr_name, attr_value in attr.iteritems():
-            if isinstance(attr_value, FunctionType) and not attr_name.startswith('_'):
+            if isinstance(attr_value,
+                          FunctionType) and not attr_name.startswith('_'):
                 attr_value = SuperLock.wrapper(attr_value)
             new_attr[attr_name] = attr_value
         new_attr['super_lock'] = RLock()
@@ -67,7 +67,6 @@ class SuperLock(type):
 
 
 class SuperThreadSafeDatabase(Database):
-
     """
     Thread safe version that always allows single thread to use db.
     It adds the same lock for all methods, so only one operation can be

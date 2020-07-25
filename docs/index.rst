@@ -1,13 +1,13 @@
-CodernityDB pure python, fast, NoSQL database
+codernitydb3 pure python, fast, NoSQL database
 =============================================
 
-CodernityDB is opensource, pure Python (no 3rd party dependency), fast (even 100 000 insert and more than 100 000 get operations per second, check :ref:`speed` if you don't believe in words), multi platform, schema-less, NoSQL_ database.
+codernitydb3 is opensource, pure Python (no 3rd party dependency), fast (even 100 000 insert and more than 100 000 get operations per second, check :ref:`speed` if you don't believe in words), multi platform, schema-less, NoSQL_ database.
 
-.. image:: CodernityDB.png
+.. image:: codernitydb3.png
     :align: center
 
 
-You can also call it a more advanced key-value database, with multiple key-values indexes in the same engine (for sure it's not "simple key/value store"). Also CodernityDB supports functions that are executed inside database. It has optional support for HTTP server version (|CodernityDB-HTTP-link|), and also Python client library (|CodernityDB-PyClient-link|) that aims to be 100% compatible with embedded version.
+You can also call it a more advanced key-value database, with multiple key-values indexes in the same engine (for sure it's not "simple key/value store"). Also codernitydb3 supports functions that are executed inside database. It has optional support for HTTP server version (|codernitydb3-HTTP-link|), and also Python client library (|codernitydb3-PyClient-link|) that aims to be 100% compatible with embedded version.
 
 **And it's** `Apache 2.0`_ **licensed !**
 
@@ -26,13 +26,13 @@ Key features
 Install
 ~~~~~~~
 
-Because CodernityDB is pure Python you need to perform standard installation for Python applications::
+Because codernitydb3 is pure Python you need to perform standard installation for Python applications::
 
-   pip install CodernityDB
+   pip install codernitydb3
 
 or using easy_install::
 
-   easy_install CodernityDB
+   easy_install codernitydb3
 
 or from sources::
 
@@ -44,7 +44,7 @@ or from sources::
 Contribute & Bugs & Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-CodernityDB is one of projects developed and released by Codernity_, so you can contact us directly in any case via db@codernity.com.
+codernitydb3 is one of projects developed and released by Codernity_, so you can contact us directly in any case via db@codernity.com.
 
 Do you want to contribute? Great! Then just fork our repository (|cdb_repo|) on Bitbucket and do a pull request. It can't be more easy!
 
@@ -59,7 +59,7 @@ Support
 
 In case of any problems, feature request you can also contact us directly.
 
-Do you want customized version of CodernityDB ? No problem, just contact us.
+Do you want customized version of codernitydb3 ? No problem, just contact us.
 
 
 Documentation index

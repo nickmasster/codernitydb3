@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-
-from CodernityDB.hash_index import UniqueHashIndex
-from CodernityDB.storage import Storage
-from CodernityDB.database import Database
+from codernitydb3.hash_index import UniqueHashIndex
+from codernitydb3.storage import Storage
+from codernitydb3.database import Database
 from hashlib import sha256
 
 import salsa20
@@ -12,7 +11,6 @@ import os
 
 
 class Salsa20Storage(Storage):
-
     def __init__(self, db_path, name, enc_key):
         super(Salsa20Storage, self).__init__(db_path, name)
         self.enc_key = enc_key
@@ -57,8 +55,8 @@ from hashlib import sha256"""
 
     def _setup_storage(self):
         if not self.storage:
-            self.storage = Salsa20Storage(
-                self.db_path, self.name, self.enc_key)
+            self.storage = Salsa20Storage(self.db_path, self.name,
+                                          self.enc_key)
 
     def _open_storage(self):
         self._setup_storage()

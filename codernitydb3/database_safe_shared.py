@@ -15,8 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from CodernityDB.env import cdb_environment
-from CodernityDB.database import PreconditionsException, RevConflict, Database
+from codernitydb3.env import cdb_environment
+from codernitydb3.database import PreconditionsException, RevConflict, Database
 # from database import Database
 
 from collections import defaultdict
@@ -25,7 +25,6 @@ from types import MethodType
 
 
 class th_safe_gen:
-
     def __init__(self, name, gen, l=None):
         self.lock = l
         self.__gen = gen
@@ -44,6 +43,7 @@ class th_safe_gen:
         def _inner(*args, **kwargs):
             res = method(*args, **kwargs)
             return th_safe_gen(index_name + "_" + meth_name, res, l)
+
         return _inner
 
 
@@ -52,11 +52,11 @@ def safe_wrapper(method, lock):
     def _inner(*args, **kwargs):
         with lock:
             return method(*args, **kwargs)
+
     return _inner
 
 
 class SafeDatabase(Database):
-
     def __init__(self, path, *args, **kwargs):
         super(SafeDatabase, self).__init__(path, *args, **kwargs)
         self.indexes_locks = defaultdict(cdb_environment['rlock_obj'])
@@ -132,13 +132,13 @@ class SafeDatabase(Database):
 
     def _single_update_index(self, index, data, db_data, doc_id):
         with self.indexes_locks[index.name]:
-            super(SafeDatabase, self)._single_update_index(
-                index, data, db_data, doc_id)
+            super(SafeDatabase,
+                  self)._single_update_index(index, data, db_data, doc_id)
 
     def _single_delete_index(self, index, data, doc_id, old_data):
         with self.indexes_locks[index.name]:
-            super(SafeDatabase, self)._single_delete_index(
-                index, data, doc_id, old_data)
+            super(SafeDatabase,
+                  self)._single_delete_index(index, data, doc_id, old_data)
 
     def edit_index(self, *args, **kwargs):
         with self.main_lock:
@@ -171,8 +171,7 @@ class SafeDatabase(Database):
         self.main_lock.release()
         try:
             lock.acquire()
-            super(SafeDatabase, self).reindex_index(
-                index, *args, **kwargs)
+            super(SafeDatabase, self).reindex_index(index, *args, **kwargs)
         finally:
             lock.release()
 

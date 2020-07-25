@@ -15,20 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from CodernityDB import patch
+from codernitydb3 import patch
 
 
 class TestPatches:
-
     def test_lfu(self):
 
-        from CodernityDB.lfu import lfu_cache
+        from codernitydb3.lfu import lfu_cache
 
         assert lfu_cache.__name__ == 'lfu_cache'
         del lfu_cache
 
         from threading import RLock
         patch.patch_lfu(RLock)
-        from CodernityDB.lfu import lfu_cache
+        from codernitydb3.lfu import lfu_cache
 
         assert lfu_cache.__name__ != 'lfu_cache'

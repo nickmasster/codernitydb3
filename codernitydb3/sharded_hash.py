@@ -15,10 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from CodernityDB.hash_index import UniqueHashIndex, HashIndex
-from CodernityDB.sharded_index import ShardedIndex
-from CodernityDB.index import IndexPreconditionsException
+from codernitydb3.hash_index import UniqueHashIndex, HashIndex
+from codernitydb3.sharded_index import ShardedIndex
+from codernitydb3.index import IndexPreconditionsException
 
 from random import getrandbits
 import uuid
@@ -28,15 +27,15 @@ class IU_ShardedUniqueHashIndex(ShardedIndex):
 
     custom_header = """import uuid
 from random import getrandbits
-from CodernityDB.sharded_index import ShardedIndex
+from codernitydb3.sharded_index import ShardedIndex
 """
 
     def __init__(self, db_path, name, *args, **kwargs):
         if kwargs.get('sh_nums', 0) > 255:
             raise IndexPreconditionsException("Too many shards")
         kwargs['ind_class'] = UniqueHashIndex
-        super(IU_ShardedUniqueHashIndex, self).__init__(db_path,
-                                                        name, *args, **kwargs)
+        super(IU_ShardedUniqueHashIndex,
+              self).__init__(db_path, name, *args, **kwargs)
         self.patchers.append(self.wrap_insert_id_index)
 
     @staticmethod
@@ -51,6 +50,7 @@ from CodernityDB.sharded_index import ShardedIndex
             start, size = storage.insert(value)
             db_obj.id_ind.insert(_id, _rev, start, size)
             return _id
+
         if not clean:
             if hasattr(db_obj, '_insert_id_index_orig'):
                 raise IndexPreconditionsException(
@@ -97,19 +97,19 @@ from CodernityDB.sharded_index import ShardedIndex
 class ShardedUniqueHashIndex(IU_ShardedUniqueHashIndex):
 
     # allow unique hash to be used directly
-    custom_header = 'from CodernityDB.sharded_hash import IU_ShardedUniqueHashIndex'
+    custom_header = 'from codernitydb3.sharded_hash import IU_ShardedUniqueHashIndex'
 
     pass
 
 
 class IU_ShardedHashIndex(ShardedIndex):
 
-    custom_header = """from CodernityDB.sharded_index import ShardedIndex"""
+    custom_header = """from codernitydb3.sharded_index import ShardedIndex"""
 
     def __init__(self, db_path, name, *args, **kwargs):
         kwargs['ind_class'] = HashIndex
-        super(IU_ShardedHashIndex, self).__init__(db_path, name, *
-                                                  args, **kwargs)
+        super(IU_ShardedHashIndex, self).__init__(db_path, name, *args,
+                                                  **kwargs)
 
     def calculate_shard(self, key):
         """

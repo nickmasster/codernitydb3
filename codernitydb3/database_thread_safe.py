@@ -15,11 +15,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-It's CodernityDB environment.
-Handles internal informations.'
-"""
+from threading import RLock
 
-cdb_environment = {
-    'mode': 'normal'
-}
+from codernitydb3.env import cdb_environment
+
+cdb_environment['mode'] = "threads"
+cdb_environment['rlock_obj'] = RLock
+
+from database_safe_shared import SafeDatabase
+
+
+class ThreadSafeDatabase(SafeDatabase):
+    """
+    Thread safe version of codernitydb3 that uses several lock objects,
+    on different methods / different indexes etc. It's completely different
+    implementation of locking than SuperThreadSafe one.
+    """
+    pass

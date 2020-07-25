@@ -1,11 +1,11 @@
 Deployment
 ==========
 
-To make use of CodernityDB (or |CodernityDB-PyClient-link|), you will need just to create global object that will be available to all your application threads etc.
+To make use of codernitydb3 (or |codernitydb3-PyClient-link|), you will need just to create global object that will be available to all your application threads etc.
 
 .. seealso:
 
-    |CodernityDB-demos| for several demo applications.
+    |codernitydb3-demos| for several demo applications.
 
 
 In general you *just* need to create database object and then make use of it. No special magic behind this.
@@ -22,14 +22,14 @@ cherrypy
     Then make use of it as normal CherryPy Tool (see: `CherryPy Custom Tools`_)
 
 flask
-    See ``minitwit`` demo in |CodernityDB-demos|
+    See ``minitwit`` demo in |codernitydb3-demos|
 
 
 UI
 ~~
 
 GTK
-    See ``DesktopRSS`` demo in |CodernityDB-demos|
+    See ``DesktopRSS`` demo in |codernitydb3-demos|
 
 
 

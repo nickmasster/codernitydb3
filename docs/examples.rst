@@ -158,7 +158,7 @@ Example sharded index, it will shard records on ``key`` into 10 shards. (see :re
 
     class MySharded(ShardedHashIndex):
 
-        custom_header = """from CodernityDB.sharded_hash import ShardedHashIndex"""
+        custom_header = """from codernitydb3.sharded_hash import ShardedHashIndex"""
 
         def __init__(self, *args, **kwargs):
             kwargs['sh_nums'] = 10
@@ -203,7 +203,7 @@ Example database functions
 Join like 1
 """""""""""
 
-It will join user with timeline entries. See |CodernityDB-Demos| ``minitwitt`` to see more things like this.
+It will join user with timeline entries. See |codernitydb3-Demos| ``minitwitt`` to see more things like this.
 
 .. code-block:: python
 

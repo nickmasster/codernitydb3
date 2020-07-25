@@ -1,13 +1,13 @@
-from CodernityDB.database import Database
-from CodernityDB.sharded_hash import ShardedUniqueHashIndex, ShardedHashIndex
-from CodernityDB.hash_index import HashIndex
+from codernitydb3.database import Database
+from codernitydb3.sharded_hash import ShardedUniqueHashIndex, ShardedHashIndex
+from codernitydb3.hash_index import HashIndex
 
 import random
 
 
 class CustomIdSharded(ShardedUniqueHashIndex):
 
-    custom_header = 'from CodernityDB.sharded_hash import ShardedUniqueHashIndex'
+    custom_header = 'from codernitydb3.sharded_hash import ShardedUniqueHashIndex'
 
     def __init__(self, *args, **kwargs):
         kwargs['sh_nums'] = 10
@@ -16,7 +16,7 @@ class CustomIdSharded(ShardedUniqueHashIndex):
 
 class MySharded(ShardedHashIndex):
 
-    custom_header = 'from CodernityDB.sharded_hash import ShardedHashIndex'
+    custom_header = 'from codernitydb3.sharded_hash import ShardedHashIndex'
 
     def __init__(self, *args, **kwargs):
         kwargs['sh_nums'] = 10
@@ -39,10 +39,8 @@ db.create(with_id_index=False)
 db.add_index(CustomIdSharded(db.path, 'id'))
 db.add_index(MySharded(db.path, 'x'))
 
-
 # it makes non sense to use sharding with such small number of records
-for x in xrange(10 ** 4):
+for x in xrange(10**4):
     db.insert({'x': x, 'y': y})
 
-
-print db.get('x', random.randint(0, 10 ** 4))['_id']
+print db.get('x', random.randint(0, 10**4))['_id']

@@ -2,11 +2,10 @@
 
 import cherrypy
 from cherrypy.process import plugins
-from CodernityDB.database_thread_safe import ThreadSafeDatabase as Database
+from codernitydb3.database_thread_safe import ThreadSafeDatabase as Database
 
 
-class CodernityDBPlugin(plugins.SimplePlugin):
-
+class codernitydb3Plugin(plugins.SimplePlugin):
     def __init__(self, bus):
         plugins.SimplePlugin.__init__(self, bus)
         self.db = None

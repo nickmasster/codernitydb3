@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-from CodernityDB.database import Database
-from CodernityDB.hash_index import HashIndex
+from codernitydb3.database import Database
+from codernitydb3.hash_index import HashIndex
 
 
 class WithXIndex(HashIndex):
-
     def __init__(self, *args, **kwargs):
         kwargs['key_format'] = 'I'
         super(WithXIndex, self).__init__(*args, **kwargs)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 
-# CodernityDB documentation build configuration file, created by
+# codernitydb3 documentation build configuration file, created by
 # sphinx-quickstart on Fri Aug 24 15:06:25 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -46,7 +46,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'CodernityDB'
+project = u'codernitydb3'
 copyright = u'2011-2013, Codernity'
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -54,7 +54,7 @@ copyright = u'2011-2013, Codernity'
 #
 # The short X.Y version.
 
-from CodernityDB import __version__
+from codernitydb3 import __version__
 version = __version__
 # The full version, including alpha/beta/rc tags.
 release = __version__
@@ -93,7 +93,6 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
 
-
 # -- Options for HTML output ---------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -116,14 +115,14 @@ else:
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'CodernityDB'
+html_title = 'codernitydb3'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = 'CodernityDB.png'
+# html_logo = 'codernitydb3.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -144,9 +143,7 @@ html_static_path = ['_static']
 # html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {
-    '**': ['globaltoc.html']
-}
+html_sidebars = {'**': ['globaltoc.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -179,8 +176,7 @@ html_sidebars = {
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'CodernityDBdoc'
-
+htmlhelp_basename = 'codernitydb3doc'
 
 # -- Options for LaTeX output --------------------------------------------
 
@@ -198,8 +194,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'CodernityDB.tex', u'CodernityDB Documentation',
-     u'Codernity', 'manual'),
+    ('index', 'codernitydb3.tex', u'codernitydb3 Documentation', u'Codernity',
+     'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -222,19 +218,15 @@ latex_documents = [
 # If false, no module index is generated.
 # latex_domain_indices = True
 
-
 # -- Options for manual page output --------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'codernitydb', u'CodernityDB Documentation',
-     [u'Codernity Team'], 1)
-]
+man_pages = [('index', 'codernitydb', u'codernitydb3 Documentation',
+              [u'Codernity Team'], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
-
 
 # -- Options for Texinfo output ------------------------------------------
 
@@ -242,9 +234,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'CodernityDB', u'CodernityDB Documentation',
-     u'Codernity Team', 'CodernityDB', 'One line description of project.',
-     'Miscellaneous'),
+    ('index', 'codernitydb3', u'codernitydb3 Documentation', u'Codernity Team',
+     'codernitydb3', 'One line description of project.', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -256,16 +247,15 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 # texinfo_show_urls = 'footnote'
 
-
 rst_prolog = """
-.. |CodernityDB-HTTP-link| replace:: CodernityDB-HTTP_
-.. |CodernityDB-PyClient-link| replace:: CodernityDB-PyClient_
+.. |codernitydb3-HTTP-link| replace:: codernitydb3-HTTP_
+.. |codernitydb3-PyClient-link| replace:: codernitydb3-PyClient_
 .. |cdb_repo| replace:: https://bitbucket.org/codernity/codernitydb
-.. |CodernityDB-demos| replace:: `CodernityDB Demos`_
-.. |bitbucket_link| replace:: `CodernityDB @ Bitbucket`_
+.. |codernitydb3-demos| replace:: `codernitydb3 Demos`_
+.. |bitbucket_link| replace:: `codernitydb3 @ Bitbucket`_
 
-.. _CodernityDB @ Bitbucket: http://bitbucket.org/codernity/codernitydb
-.. _CodernityDB Demos: http://bitbucket.org/codernity/codernitydb-demos
-.. _CodernityDB-HTTP: http://labs.codernity.com/codernitydb-http
-.. _CodernityDB-PyClient: http://labs.codernity.com/codernitydb-pyclient
+.. _codernitydb3 @ Bitbucket: http://bitbucket.org/codernity/codernitydb
+.. _codernitydb3 Demos: http://bitbucket.org/codernity/codernitydb-demos
+.. _codernitydb3-HTTP: http://labs.codernity.com/codernitydb-http
+.. _codernitydb3-PyClient: http://labs.codernity.com/codernitydb-pyclient
 """

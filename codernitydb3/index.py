@@ -15,20 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import marshal
 
 import struct
 import shutil
 
-from CodernityDB.storage import IU_Storage, DummyStorage
+from codernitydb3.storage import IU_Storage, DummyStorage
 
 try:
-    from CodernityDB import __version__
+    from codernitydb3 import __version__
 except ImportError:
     from __init__ import __version__
-
 
 import io
 
@@ -71,9 +69,7 @@ class Index(object):
 
     custom_header = ""  # : use it for imports required by your index
 
-    def __init__(self,
-                 db_path,
-                 name):
+    def __init__(self, db_path, name):
         self.name = name
         self._start_ind = 500
         self.db_path = db_path
@@ -81,8 +77,9 @@ class Index(object):
     def open_index(self):
         if not os.path.isfile(os.path.join(self.db_path, self.name + '_buck')):
             raise IndexException("Doesn't exists")
-        self.buckets = io.open(
-            os.path.join(self.db_path, self.name + "_buck"), 'r+b', buffering=0)
+        self.buckets = io.open(os.path.join(self.db_path, self.name + "_buck"),
+                               'r+b',
+                               buffering=0)
         self._fix_params()
         self._open_storage()
 

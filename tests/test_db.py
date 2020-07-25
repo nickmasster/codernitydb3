@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from shared import DB_Tests
-from CodernityDB.database import Database
+from codernitydb3.database import Database
 from hash_tests import HashIndexTests
 from tree_tests import TreeIndexTests
 from shard_tests import ShardTests

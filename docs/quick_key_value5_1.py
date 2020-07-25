@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-from CodernityDB.database import Database
-from CodernityDB.tree_index import TreeBasedIndex
+from codernitydb3.database import Database
+from codernitydb3.tree_index import TreeBasedIndex
 
 import random
 
 
 class WithXIndex(TreeBasedIndex):
-
     def __init__(self, *args, **kwargs):
         kwargs['node_capacity'] = 10
         kwargs['key_format'] = 'I'

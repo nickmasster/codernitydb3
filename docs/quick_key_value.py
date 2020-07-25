@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from CodernityDB.database import Database
+from codernitydb3.database import Database
 
 
 def main():
@@ -12,6 +12,7 @@ def main():
 
     for curr in db.all('id'):
         print curr
+
 
 if __name__ == '__main__':
     main()

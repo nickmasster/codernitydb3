@@ -15,14 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from CodernityDB.index import Index
-# from CodernityDB.env import cdb_environment
+from codernitydb3.index import Index
+# from codernitydb3.env import cdb_environment
 # import warnings
 
 
 class ShardedIndex(Index):
-
     def __init__(self, db_path, name, *args, **kwargs):
         """
         There are 3 additional parameters. You have to hardcode them in your custom class. **NEVER** use directly
@@ -57,7 +55,7 @@ class ShardedIndex(Index):
     def _set_shard_datas(self, *args, **kwargs):
         self.shards = {}
         self.shards_r = {}
-#        ind_class = globals()[self.ind_class]
+        #        ind_class = globals()[self.ind_class]
         ind_class = self.ind_class
         i = 0
         for sh_name in [self.name + str(x) for x in xrange(self.sh_nums)]:

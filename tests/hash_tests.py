@@ -15,14 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from CodernityDB.database import Database, RecordDeleted, RecordNotFound
-from CodernityDB.database import DatabaseException
+from codernitydb3.database import Database, RecordDeleted, RecordNotFound
+from codernitydb3.database import DatabaseException
 
-from CodernityDB.hash_index import HashIndex, UniqueHashIndex
-from CodernityDB.index import IndexException
-from CodernityDB.misc import random_hex_32
+from codernitydb3.hash_index import HashIndex, UniqueHashIndex
+from codernitydb3.index import IndexException
+from codernitydb3.misc import random_hex_32
 
-from CodernityDB import rr_cache
+from codernitydb3 import rr_cache
 
 import pytest
 import os
@@ -32,6 +32,7 @@ from hashlib import md5
 try:
     from collections import Counter
 except ImportError:
+
     class Counter(dict):
 
         'Mapping where default values are zero'
@@ -41,7 +42,6 @@ except ImportError:
 
 
 class CustomHashIndex(HashIndex):
-
     def __init__(self, *args, **kwargs):
         kwargs['key_format'] = 'I'
         kwargs['hash_lim'] = 1
@@ -62,7 +62,6 @@ class CustomHashIndex(HashIndex):
 
 
 class Md5Index(HashIndex):
-
     def __init__(self, *args, **kwargs):
         kwargs['key_format'] = '16s'
         kwargs['hash_lim'] = 4 * 1024
@@ -76,7 +75,6 @@ class Md5Index(HashIndex):
 
 
 class WithAIndex(HashIndex):
-
     def __init__(self, *args, **kwargs):
         kwargs['key_format'] = '16s'
         kwargs['hash_lim'] = 4 * 1024
@@ -97,7 +95,6 @@ class WithAIndex(HashIndex):
 
 
 class HashIndexTests:
-
     def setup_method(self, method):
         self.counter = Counter()
 
@@ -170,8 +167,10 @@ class HashIndexTests:
 
     def test_get_after_delete(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
-        db.set_indexes([UniqueHashIndex(db.path, 'id'),
-                        CustomHashIndex(db.path, 'custom')])
+        db.set_indexes([
+            UniqueHashIndex(db.path, 'id'),
+            CustomHashIndex(db.path, 'custom')
+        ])
         db.create()
 
         for x in xrange(100):
@@ -233,58 +232,65 @@ class HashIndexTests:
         assert len(ins) == db.count(db.all, 'id')
 
     def test_update_custom_unique(self, tmpdir, inserts):
-            db = self._db(os.path.join(str(tmpdir), 'db'))
-            db.set_indexes([UniqueHashIndex(db.path, 'id'),
-                            CustomHashIndex(db.path, 'custom')])
-            db.create()
+        db = self._db(os.path.join(str(tmpdir), 'db'))
+        db.set_indexes([
+            UniqueHashIndex(db.path, 'id'),
+            CustomHashIndex(db.path, 'custom')
+        ])
+        db.create()
 
-            ins = []
+        ins = []
 
-            for x in xrange(inserts):
-                doc = dict(test=1)
-                db.insert(doc)
-                ins.append(doc)
-                self.counter['ins'] += 1
+        for x in xrange(inserts):
+            doc = dict(test=1)
+            db.insert(doc)
+            ins.append(doc)
+            self.counter['ins'] += 1
 
-            assert len(ins) == db.count(db.all, 'id')
-            assert len(ins) == db.count(db.all, 'custom')
-            assert len(ins) == db.count(
-                db.get_many, 'custom', key=0, limit=inserts + 1)
-            assert 0 == db.count(
-                db.get_many, 'custom', key=1, limit=inserts + 1)
+        assert len(ins) == db.count(db.all, 'id')
+        assert len(ins) == db.count(db.all, 'custom')
+        assert len(ins) == db.count(db.get_many,
+                                    'custom',
+                                    key=0,
+                                    limit=inserts + 1)
+        assert 0 == db.count(db.get_many, 'custom', key=1, limit=inserts + 1)
 
-            sample = random.sample(ins, inserts / 10)
-            for curr in sample:
-                curr['test'] = 10
-                db.update(curr)
-                self.counter['upd'] += 1
+        sample = random.sample(ins, inserts / 10)
+        for curr in sample:
+            curr['test'] = 10
+            db.update(curr)
+            self.counter['upd'] += 1
 
-            assert self.counter['ins'] == db.count(db.all, 'id')
-            assert self.counter['ins'] == db.count(db.all, 'custom')
-            assert self.counter['upd'] == db.count(
-                db.get_many, 'custom', key=1, limit=inserts + 1)
-            assert self.counter['ins'] - self.counter['upd'] == db.count(
-                db.get_many, 'custom', key=0, limit=inserts + 1)
+        assert self.counter['ins'] == db.count(db.all, 'id')
+        assert self.counter['ins'] == db.count(db.all, 'custom')
+        assert self.counter['upd'] == db.count(db.get_many,
+                                               'custom',
+                                               key=1,
+                                               limit=inserts + 1)
+        assert self.counter['ins'] - self.counter['upd'] == db.count(
+            db.get_many, 'custom', key=0, limit=inserts + 1)
 
     def test_update_custom_same_key_new_value(self, tmpdir, inserts):
-            db = self._db(os.path.join(str(tmpdir), 'db'))
-            db.set_indexes([UniqueHashIndex(db.path, 'id'),
-                            CustomHashIndex(db.path, 'custom')])
-            db.create()
+        db = self._db(os.path.join(str(tmpdir), 'db'))
+        db.set_indexes([
+            UniqueHashIndex(db.path, 'id'),
+            CustomHashIndex(db.path, 'custom')
+        ])
+        db.create()
 
-            inserted = []
-            for x in xrange(inserts):
-                inserted.append(db.insert(dict(test=x)))
-                inserted[-1]['test'] = x
-            for el in inserted[::20]:
-                for i in xrange(4):
-                    curr = db.get('id', el['_id'], with_storage=True)
-                    assert el['test'] == curr['test']
-                    el['test'] += random.randint(1, 3)
-                    db.update(el)
-            assert len(inserted) == db.count(db.all, 'custom')
+        inserted = []
+        for x in xrange(inserts):
+            inserted.append(db.insert(dict(test=x)))
+            inserted[-1]['test'] = x
+        for el in inserted[::20]:
+            for i in xrange(4):
+                curr = db.get('id', el['_id'], with_storage=True)
+                assert el['test'] == curr['test']
+                el['test'] += random.randint(1, 3)
+                db.update(el)
+        assert len(inserted) == db.count(db.all, 'custom')
 
-            db.close()
+        db.close()
 
     def test_double_insert(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
@@ -352,30 +358,30 @@ class HashIndexTests:
         assert db.count(db.all, 'id') == inserts - 1
 
     def test_compact(self, tmpdir):
-            db = self._db(os.path.join(str(tmpdir), 'db'))
-            db.set_indexes([UniqueHashIndex(db.path, 'id')])
-            db.create()
-            l = []
-            for i in xrange(10):
-                c = dict(i=i)
-                db.insert(c)
-                l.append(c)
+        db = self._db(os.path.join(str(tmpdir), 'db'))
+        db.set_indexes([UniqueHashIndex(db.path, 'id')])
+        db.create()
+        l = []
+        for i in xrange(10):
+            c = dict(i=i)
+            db.insert(c)
+            l.append(c)
 
-            for i in xrange(10):
-                curr = l[i]
-                c = db.get("id", curr['_id'])
-                c['update'] = True
-                c.update(db.update(c))
+        for i in xrange(10):
+            curr = l[i]
+            c = db.get("id", curr['_id'])
+            c['update'] = True
+            c.update(db.update(c))
 
-            db.compact()
+        db.compact()
 
-            for j in range(10):
-                curr = l[j]
-                c = db.get('id', curr['_id'])
-                assert c['_id'] == curr['_id']
-                assert c['i'] == j
+        for j in range(10):
+            curr = l[j]
+            c = db.get('id', curr['_id'])
+            assert c['_id'] == curr['_id']
+            assert c['i'] == j
 
-            db.close()
+        db.close()
 
     def test_compact2(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
@@ -407,7 +413,8 @@ class HashIndexTests:
     def test_similar(self, tmpdir):
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.set_indexes(
-            [UniqueHashIndex(db.path, 'id'), Md5Index(db.path, 'md5')])
+            [UniqueHashIndex(db.path, 'id'),
+             Md5Index(db.path, 'md5')])
         db.create()
 
         a = dict(name='pigmej')
@@ -420,8 +427,10 @@ class HashIndexTests:
     def test_custom_index(self, tmpdir):
 
         db = self._db(os.path.join(str(tmpdir), 'db'))
-        db.set_indexes([UniqueHashIndex(
-            db.path, 'id'), CustomHashIndex(db.path, 'custom')])
+        db.set_indexes([
+            UniqueHashIndex(db.path, 'id'),
+            CustomHashIndex(db.path, 'custom')
+        ])
         db.create()
 
         l_1 = []
@@ -487,7 +496,8 @@ class HashIndexTests:
 
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.set_indexes(
-            [UniqueHashIndex(db.path, 'id'), WithAIndex(db.path, 'with_a')])
+            [UniqueHashIndex(db.path, 'id'),
+             WithAIndex(db.path, 'with_a')])
         db.create()
 
         all_ins = []
@@ -541,36 +551,39 @@ class HashIndexTests:
 
     def test_all_same_keys(self, tmpdir, inserts):
 
-            db = self._db(os.path.join(str(tmpdir), 'db'))
-            db.set_indexes([UniqueHashIndex(db.path, 'id'),
-                            WithAIndex(db.path, 'with_a')])
+        db = self._db(os.path.join(str(tmpdir), 'db'))
+        db.set_indexes(
+            [UniqueHashIndex(db.path, 'id'),
+             WithAIndex(db.path, 'with_a')])
 
-            db.create()
-            l = 0
-            r = 0
-            z = 0
-            data = []
-            for i in xrange(inserts):
-                a = random.randint(0, 10)
-                if a > 5:
-                    r += 1
-                elif a == 0:
-                    z += 1
-                else:
-                    l += 1
-                c = dict(a=a)
-                db.insert(c)
-                data.append(c)
+        db.create()
+        l = 0
+        r = 0
+        z = 0
+        data = []
+        for i in xrange(inserts):
+            a = random.randint(0, 10)
+            if a > 5:
+                r += 1
+            elif a == 0:
+                z += 1
+            else:
+                l += 1
+            c = dict(a=a)
+            db.insert(c)
+            data.append(c)
 
-            assert l + r + z == db.count(db.all, "id")
+        assert l + r + z == db.count(db.all, "id")
 
-            assert l + r == db.count(db.all, "with_a")
+        assert l + r == db.count(db.all, "with_a")
 
     def test_update_same(self, tmpdir, inserts):
         db = self._db(os.path.join(str(tmpdir), 'db'))
-        db.set_indexes([UniqueHashIndex(db.path, 'id'),
-                        WithAIndex(db.path, 'with_a'),
-                        CustomHashIndex(db.path, 'custom')])
+        db.set_indexes([
+            UniqueHashIndex(db.path, 'id'),
+            WithAIndex(db.path, 'with_a'),
+            CustomHashIndex(db.path, 'custom')
+        ])
         db.create()
 
         inserted = {}
@@ -589,11 +602,15 @@ class HashIndexTests:
         def _check():
 
             assert self.counter['l'] == db.count(db.get_many,
-                                                 'custom', key=0, limit=inserts)
+                                                 'custom',
+                                                 key=0,
+                                                 limit=inserts)
             assert self.counter['r'] == db.count(db.get_many,
-                                                 'custom', key=1, limit=inserts)
-            assert self.counter['r'] + self.counter[
-                'l'] == db.count(db.all, "custom")
+                                                 'custom',
+                                                 key=1,
+                                                 limit=inserts)
+            assert self.counter['r'] + self.counter['l'] == db.count(
+                db.all, "custom")
 
         _check()
 
@@ -662,15 +679,18 @@ class HashIndexTests:
 
     def test_offset_in_functions(self, tmpdir, inserts):
         db = self._db(os.path.join(str(tmpdir), 'db'))
-        db.set_indexes([UniqueHashIndex(db.path, 'id'),
-                        CustomHashIndex(db.path, 'custom')])
+        db.set_indexes([
+            UniqueHashIndex(db.path, 'id'),
+            CustomHashIndex(db.path, 'custom')
+        ])
         db.create()
         offset = inserts // 10 or 1
         real_inserts = inserts if inserts < 1000 else 1000
         for x in xrange(real_inserts):
-                db.insert(dict(test=x))
+            db.insert(dict(test=x))
         assert real_inserts - offset == db.count(db.all, 'id', offset=offset)
-        assert real_inserts - offset == db.count(db.all, 'custom',
+        assert real_inserts - offset == db.count(db.all,
+                                                 'custom',
                                                  offset=offset)
         assert 1 == db.count(db.get_many, 'custom', 1, limit=1, offset=offset)
 

@@ -66,13 +66,13 @@ Hash Index only
 
 .. note::
 
-    CodernityDB **never** caches disk read directly. Internal cache
+    codernitydb3 **never** caches disk read directly. Internal cache
     mechanizm only affects metadata lookup in database
     structure.
 
 As you can see it's possible to reach near 100 000 per second insert operations per second (when single record has 13 bytes).
 
-Why we did choose from 13 to 1524 bytes for tests ? When using marshal storage (the default one), 13 bytes is enough to keep a dictionary with one long integer (2**31) - 1 key. So it's equivalent of other database tests (many Redis ones, or other key/value based). But still keep in mind that in CodernityDB whole dictionary that contains one key with integer value is stored. 44 bytes is enough to keep an long integer and 20 letters string. Enough to store some text based statistics.
+Why we did choose from 13 to 1524 bytes for tests ? When using marshal storage (the default one), 13 bytes is enough to keep a dictionary with one long integer (2**31) - 1 key. So it's equivalent of other database tests (many Redis ones, or other key/value based). But still keep in mind that in codernitydb3 whole dictionary that contains one key with integer value is stored. 44 bytes is enough to keep an long integer and 20 letters string. Enough to store some text based statistics.
 
 The script for that performance test looks like:
 
@@ -163,7 +163,7 @@ milions) data that are already in database. Whole test was to insert ``40 000 00
    354 5.27701687813
    355 9.33711600304
 
-As you can see CodernityDB performs pretty stable even on quite big number of records inside database.
+As you can see codernitydb3 performs pretty stable even on quite big number of records inside database.
 
 We can easily compare those data to Kyoto Cabinet for example. Kyoto DB was: ``casket.kch#bnum=5000000#xmsiz=536870912``
 
@@ -197,7 +197,7 @@ We can easily compare those data to Kyoto Cabinet for example. Kyoto DB was: ``c
 *Surprised?*
 ^^^^^^^^^^^^
 
-As you can see while Kyoto Cabinet is quite fast in most cases, it slowdowns **a lot** sometimes (do you know better setup that we should use? Contact us). ``autosync`` and ``autotran`` was disabled in Kyoto Cabinet. What's even more important in CodernityDB you can have more than one index (it affects performance though), so you don't have to copy your data all over single databases.
+As you can see while Kyoto Cabinet is quite fast in most cases, it slowdowns **a lot** sometimes (do you know better setup that we should use? Contact us). ``autosync`` and ``autotran`` was disabled in Kyoto Cabinet. What's even more important in codernitydb3 you can have more than one index (it affects performance though), so you don't have to copy your data all over single databases.
 
 There you will find statistics for that tests:
 
@@ -216,7 +216,7 @@ There you will find statistics for that tests:
      - 13.6441506329
      - 25.5503667156
      - 5471.30440378
-   * - CodernityDB
+   * - codernitydb3
      - 1.63907909393
      - 12.9895970821
      - 4.57873315585
@@ -224,7 +224,7 @@ There you will find statistics for that tests:
      - 1836.0719955
 
 
-CodernityDB slow downs on when there is a lot of records in database, but as you can see it performs pretty stable. And remember, Kyoto Cabinet is C++ database while CodernityDB is pure Python.
+codernitydb3 slow downs on when there is a lot of records in database, but as you can see it performs pretty stable. And remember, Kyoto Cabinet is C++ database while codernitydb3 is pure Python.
 
 
 

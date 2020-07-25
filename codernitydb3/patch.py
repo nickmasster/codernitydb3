@@ -15,8 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from CodernityDB.misc import NONE
+from codernitydb3.misc import NONE
 
 
 def __patch(obj, name, new):
@@ -35,7 +34,7 @@ def patch_cache_lfu(lock_obj):
 
     .. note::
 
-       It's internal CodernityDB mechanizm, it will be called when needed
+       It's internal codernitydb3 mechanizm, it will be called when needed
 
     """
     import lfu_cache
@@ -52,7 +51,7 @@ def patch_cache_rr(lock_obj):
 
     .. note::
 
-       It's internal CodernityDB mechanizm, it will be called when needed
+       It's internal codernitydb3 mechanizm, it will be called when needed
 
     """
     import rr_cache
@@ -82,11 +81,11 @@ def patch_flush_fsync(db_obj):
         ...
 
     """
-
     def always_fsync(ind_obj):
         def _inner():
             ind_obj.orig_flush()
             ind_obj.fsync()
+
         return _inner
 
     for index in db_obj.indexes:

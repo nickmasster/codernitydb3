@@ -14,18 +14,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+It's codernitydb3 environment.
+Handles internal informations.'
+"""
 
-from gevent.lock import RLock
-
-from CodernityDB.env import cdb_environment
-
-cdb_environment['mode'] = "gevent"
-cdb_environment['rlock_obj'] = RLock
-
-
-# from CodernityDB.database import Database
-from CodernityDB.database_safe_shared import SafeDatabase
-
-
-class GeventDatabase(SafeDatabase):
-    pass
+cdb_environment = {'mode': 'normal'}

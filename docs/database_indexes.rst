@@ -49,7 +49,7 @@ custom_header
     in :ref:`Examples - secure storage <secure_storage_example>`.
 
 storage_class
-    It defines what storage to use. By default all indexes will use :py:class:`CodernityDB.storage.Storage`. If your Storage needs to be initialized in custom way please look at :ref:`Examples - secure storage <secure_storage_example>`.
+    It defines what storage to use. By default all indexes will use :py:class:`codernitydb3.storage.Storage`. If your Storage needs to be initialized in custom way please look at :ref:`Examples - secure storage <secure_storage_example>`.
 
 
 .. _internal_hash_index:
@@ -70,9 +70,9 @@ can refer also for `ISAM`_.
 
 There are two major implementations
 
-* :py:class:`~CodernityDB.hash_index.UniqueHashIndex` - should be used
+* :py:class:`~codernitydb3.hash_index.UniqueHashIndex` - should be used
   only for **id** index
-* :py:class:`~CodernityDB.hash_index.HashIndex` - a general use Hash Index.
+* :py:class:`~codernitydb3.hash_index.HashIndex` - a general use Hash Index.
 
 They differs in several places, for details you should read the code
 of them both.
@@ -82,7 +82,7 @@ of them both.
     :ref:`Hash Index speed tests <hash_speed>`
         For speed tests
 
-    :py:class:`CodernityDB.hash_index.HashIndex`
+    :py:class:`codernitydb3.hash_index.HashIndex`
         For documentation
 
 .. _conflict_resolution:
@@ -98,7 +98,7 @@ duplicate keys
    For duplicate keys the same mechanism is used as for
    :ref:`conflict resolution <conflict_resolution>`. All indexes different than *id* one can
    accept more than one record with the same key
-   (:py:meth:`~CodernityDB.database.Database.get_many`).
+   (:py:meth:`~codernitydb3.database.Database.get_many`).
 
 
 .. _birthday problem: http://en.wikipedia.org/wiki/Birthday_problem
@@ -164,7 +164,7 @@ hash_lim
 
 
 make_key_value
-    (:py:meth:`~CodernityDB.index.Index.make_key_value`)
+    (:py:meth:`~codernitydb3.index.Index.make_key_value`)
 
     That function is called by database when inserting new or updating
     objects in database.  It **has** to return ``None`` if index is
@@ -174,11 +174,11 @@ make_key_value
 
 
 make_key
-    (:py:meth:`~CodernityDB.index.Index.make_key`)
+    (:py:meth:`~codernitydb3.index.Index.make_key`)
 
     That function is called when query operations are performed on
     database. It should format the key correctly to match that one
-    returned by :py:meth:`CodernityDB.index.Index.make_key_value`
+    returned by :py:meth:`codernitydb3.index.Index.make_key_value`
 
 
 entry_line_format
@@ -245,7 +245,7 @@ It will allow you to perform for example:
 
 .. note::
     Please see :ref:`examples` for more examples, and
-    :py:mod:`CodernityDB.hash_index` for full Hash Index documentation
+    :py:mod:`codernitydb3.hash_index` for full Hash Index documentation
 
 
 .. _Python struct documentation: http://docs.python.org/library/struct.html#format-characters
@@ -274,7 +274,7 @@ inside Tree structure (on leafs/nodes).
     :ref:`Tree Index speed tests <tree_speed>`
         For speed tests
 
-    :py:class:`CodernityDB.tree_index.TreeBasedIndex`
+    :py:class:`codernitydb3.tree_index.TreeBasedIndex`
         For documentation
 
     :ref:`multiple_keys_index`
@@ -371,7 +371,7 @@ Imagine something like infix search:
     
     class TreeMultiTest(MultiTreeBasedIndex):
 
-        custom_header = """from CodernityDB.tree_index import MultiTreeBasedIndex
+        custom_header = """from codernitydb3.tree_index import MultiTreeBasedIndex
     from itertools import izip"""
 
         def __init__(self, *args, **kwargs):
@@ -408,7 +408,7 @@ By using that index you will be able to perform infix search over all words in y
     print db.get('words', 'cod')['w']  # "Codernity"
     
 
-As you can see implementing infix/suffix/prefix search mechanism in CodernityDB is very easy.
+As you can see implementing infix/suffix/prefix search mechanism in codernitydb3 is very easy.
     
 .. note::
     Multiindex requires more time to insert data. Get speed is exactly as fast as in non multiindex (same rules applies to both of them).
@@ -426,7 +426,7 @@ Index functions
 ---------------
 
 
-Quite important thing in CodernityDB are index functions. You can do with them anything you want they have access to database object, so they can perform operations on multiple indexes. If you want join like operation, you should write function. Then you will be able to run that function database side when using |CodernityDB-HTTP-link|. The only mandatory argument for that kind of function is ``db``, the rest are function arguments.
+Quite important thing in codernitydb3 are index functions. You can do with them anything you want they have access to database object, so they can perform operations on multiple indexes. If you want join like operation, you should write function. Then you will be able to run that function database side when using |codernitydb3-HTTP-link|. The only mandatory argument for that kind of function is ``db``, the rest are function arguments.
 
 
 Writing function is easy see an example there:
@@ -456,18 +456,18 @@ Function should start it's name from ``run_`` then you can call it:
 
 
 
-As mentioned before, while you work in embedded mode it makes no big difference, but when using |CodernityDB-HTTP-link| it makes huge.
+As mentioned before, while you work in embedded mode it makes no big difference, but when using |codernitydb3-HTTP-link| it makes huge.
 
 
 .. note::
 
-    Please remember that CodernityDB is *not* relational Database, forcing it to work in that model will usually work, but it's not recommended. You should try to denormalize it (`Database normalization`_).
+    Please remember that codernitydb3 is *not* relational Database, forcing it to work in that model will usually work, but it's not recommended. You should try to denormalize it (`Database normalization`_).
 
 .. _Database normalization: http://en.wikipedia.org/wiki/Database_normalization
 
 
 .. note::
-   Please see :ref:`examples` for more examples, and :py:mod:`CodernityDB.tree_index` for full documentation
+   Please see :ref:`examples` for more examples, and :py:mod:`codernitydb3.tree_index` for full documentation
 
 
 .. _BPlus tree: http://en.wikipedia.org/wiki/B%2B_tree
@@ -656,7 +656,7 @@ Functions that you can use in ``make_key`` and ``make_key_value``:
     :rtype: set   
 
 .. note::
-    Obviously you can use that simple indexes in |CodernityDB-HTTP-link| without any problem.
+    Obviously you can use that simple indexes in |codernitydb3-HTTP-link| without any problem.
 
 .. note::
     Error reporting / handling system in that mode will tell you exactly what's wrong with your code.
@@ -671,9 +671,9 @@ Tables, collections...?
 
 .. note::
 
-   In |CodernityDB-demos| you can find minitwit example which is rewrite from Sqlite application.
+   In |codernitydb3-demos| you can find minitwit example which is rewrite from Sqlite application.
 
-Sure! You can use Index mechanism do to it. As it has been mentioned before, Index mechanism in CodernityDB is like read only Table in SQL databases (see :ref:`index design <database_design_index>`). So all you need is to define how your records will differ each other.
+Sure! You can use Index mechanism do to it. As it has been mentioned before, Index mechanism in codernitydb3 is like read only Table in SQL databases (see :ref:`index design <database_design_index>`). So all you need is to define how your records will differ each other.
 
 Let's assume that you want to users and users and some data that belongs to user. You will probably want to be able to get all users, and all things that belongs to him, right? So.
 
@@ -682,12 +682,12 @@ Let's assume that you want to users and users and some data that belongs to user
 
 
 Having that indexes in your database will allow you to query for single user and for items of that user. Isn't it simple?
-As you can see, index in CodernityDB is not an index that you probably get used to. It's much more.
+As you can see, index in codernitydb3 is not an index that you probably get used to. It's much more.
 
-How an index code is processed by CodernityDB?
+How an index code is processed by codernitydb3?
 -----------------------------------------------
 
-    When you provide CodernityDB with an index, it uses `getsource <http://docs.python.org/2/library/inspect.html#inspect.getsource>`_ function from `inspect module <http://docs.python.org/2/library/inspect.html>`_ to get index code. This means, that after you call add_index function, it will look for the index class in current scope, take the whole class code as it is (including intends) and place it inside it's own code. Hence there are few cons you have to bear in mind:
+    When you provide codernitydb3 with an index, it uses `getsource <http://docs.python.org/2/library/inspect.html#inspect.getsource>`_ function from `inspect module <http://docs.python.org/2/library/inspect.html>`_ to get index code. This means, that after you call add_index function, it will look for the index class in current scope, take the whole class code as it is (including intends) and place it inside it's own code. Hence there are few cons you have to bear in mind:
 
 * You can not generate class code on the fly inside, let's say, a function, like that:
     
@@ -705,7 +705,7 @@ How an index code is processed by CodernityDB?
                 return key
         return MyIndex
 
-Despite of code being correct in python terms, it will produce an error in CodernityDB, since class isn't defined in proper scope. 
+Despite of code being correct in python terms, it will produce an error in codernitydb3, since class isn't defined in proper scope. 
 
     * You can not provide index class code with a variable defined outside this class:
 
@@ -722,7 +722,7 @@ Despite of code being correct in python terms, it will produce an error in Coder
         def make_key(self,key):
                 return key
 
-Even if now class is in proper scope, the example won't work, because variable ``a`` isn't known to CodernityDB.
+Even if now class is in proper scope, the example won't work, because variable ``a`` isn't known to codernitydb3.
 
 
 .. _sharding_in_indexes:
@@ -775,7 +775,7 @@ As you can see, sharding **does matter**. It gives you almost **25%** performanc
 
 .. note::
 
-    What's even more important in Sharding is that as you probably already know CodernityDB index metadata stores data position and size by using ``struct`` module. By default those fields are ``I`` format (``unsigned int``). So when you need to change that format to ``Q`` without sharding, you probably can switch to sharding and still use ``I`` format. ``I`` format can accept values up to ``4294967295`` bytes so about 4GB. Having 100 shards will mean that you can index up to ``4GB * 100`` data.
+    What's even more important in Sharding is that as you probably already know codernitydb3 index metadata stores data position and size by using ``struct`` module. By default those fields are ``I`` format (``unsigned int``). So when you need to change that format to ``Q`` without sharding, you probably can switch to sharding and still use ``I`` format. ``I`` format can accept values up to ``4294967295`` bytes so about 4GB. Having 100 shards will mean that you can index up to ``4GB * 100`` data.
 
 
 .. note::

@@ -9,7 +9,7 @@ paste it to play with it
 
 .. note::
 
-   If you are windows user, you should keep separate index codes from __main__ (see https://bitbucket.org/codernity/codernitydb/issue/12/error-in-tutorial-sample) because CodernityDB uses inspect module, which doesn't work as expected on windows.
+   If you are windows user, you should keep separate index codes from __main__ (see https://bitbucket.org/codernity/codernitydb/issue/12/error-in-tutorial-sample) because codernitydb3 uses inspect module, which doesn't work as expected on windows.
 
 
 Insert / Save / Store
@@ -26,7 +26,7 @@ Insert / Save / Store
 - Simple key-value
 
 As you can see database usage is very easy. That was the simplest
-usage of CodernityDB.
+usage of codernitydb3.
 
 
 Get / Query
@@ -68,8 +68,8 @@ As you can see database supports duplicate keys.
 .. warning::
 
    Using Hash index, you can't rely on record order, using
-   :py:meth:`~CodernityDB.database.Database.all` or
-   :py:meth:`~CodernityDB.database.Database.get_many`.
+   :py:meth:`~codernitydb3.database.Database.all` or
+   :py:meth:`~codernitydb3.database.Database.get_many`.
 
 Ordered data
 ------------
@@ -121,7 +121,7 @@ There are two ways to do it:
     :linenos:
 
 Using that function *inside database* will perform much better when
-you will use |CodernityDB-HTTP-link| because then calculations will be
+you will use |codernitydb3-HTTP-link| because then calculations will be
 done server side. It will also allow you to reuse the same logic code
 in different places.
 
@@ -129,7 +129,7 @@ In that examples we assumed that ``t`` value is not stored in our
 ``X`` index.
 
 .. note::
-   If you're |CodernityDB-HTTP-link| with |CodernityDB-PyClient-link|
+   If you're |codernitydb3-HTTP-link| with |codernitydb3-PyClient-link|
    you should just change Database initialization (set host & port).
 
 

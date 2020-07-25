@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from CodernityDB.tree_index import TreeBasedIndex
+from codernitydb3.tree_index import TreeBasedIndex
 import struct
 import os
 
@@ -25,7 +25,6 @@ import json
 
 
 class DebugTreeBasedIndex(TreeBasedIndex):
-
     def __init__(self, *args, **kwargs):
         super(DebugTreeBasedIndex, self).__init__(*args, **kwargs)
 
@@ -78,8 +77,9 @@ class DebugTreeBasedIndex(TreeBasedIndex):
         self.buckets.seek(leaf_start_position)
         data = self.buckets.read(self.leaf_heading_size +
                                  nr_of_elements * self.single_leaf_record_size)
-        leaf = struct.unpack('<' + self.leaf_heading_format +
-                             nr_of_elements * self.single_leaf_record_format, data)
+        leaf = struct.unpack(
+            '<' + self.leaf_heading_format +
+            nr_of_elements * self.single_leaf_record_format, data)
         print leaf
         print
 
@@ -88,14 +88,16 @@ class DebugTreeBasedIndex(TreeBasedIndex):
         nr_of_elements = self._read_node_nr_of_elements_and_children_flag(
             node_start_position)[0]
         self.buckets.seek(node_start_position)
-        data = self.buckets.read(self.node_heading_size + self.pointer_size
-                                 + nr_of_elements * (self.key_size + self.pointer_size))
-        node = struct.unpack('<' + self.node_heading_format + self.pointer_format
-                             + nr_of_elements * (
-                                 self.key_format + self.pointer_format),
-                             data)
+        data = self.buckets.read(self.node_heading_size + self.pointer_size +
+                                 nr_of_elements *
+                                 (self.key_size + self.pointer_size))
+        node = struct.unpack(
+            '<' + self.node_heading_format + self.pointer_format +
+            nr_of_elements * (self.key_format + self.pointer_format), data)
         print node
         print
+
+
 # ------------------>
 
 
@@ -123,10 +125,10 @@ def database_step_by_step(db_obj, path=None):
             funct_name = f.__name__
             if funct_name == 'count':
                 name = args[0].__name__
-                meth_args = (name,) + args[1:]
+                meth_args = (name, ) + args[1:]
             elif funct_name in ('reindex_index', 'compact_index'):
                 name = args[0].name
-                meth_args = (name,) + args[1:]
+                meth_args = (name, ) + args[1:]
             else:
                 meth_args = args
             kwargs_copy = kwargs.copy()
@@ -136,20 +138,21 @@ def database_step_by_step(db_obj, path=None):
                 try:
                     res = f(*args, **kwargs)
                 except:
-                    packed = json.dumps((funct_name,
-                                         meth_args, kwargs_copy, None))
+                    packed = json.dumps(
+                        (funct_name, meth_args, kwargs_copy, None))
                     f_obj.write('%s\n' % packed)
                     f_obj.flush()
                     raise
                 else:
-                    packed = json.dumps((funct_name,
-                                         meth_args, kwargs_copy, res))
+                    packed = json.dumps(
+                        (funct_name, meth_args, kwargs_copy, res))
                 f_obj.write('%s\n' % packed)
                 f_obj.flush()
             else:
                 if funct_name == 'get':
                     for curr in __stack:
-                        if ('delete' in curr or 'update' in curr) and not curr.startswith('test'):
+                        if ('delete' in curr or 'update'
+                                in curr) and not curr.startswith('test'):
                             remove_from_stack(funct_name)
                             return f(*args, **kwargs)
                 packed = json.dumps((funct_name, meth_args, kwargs_copy))
@@ -158,9 +161,11 @@ def database_step_by_step(db_obj, path=None):
                 res = f(*args, **kwargs)
             remove_from_stack(funct_name)
             return res
+
         return __inner
 
-    for meth_name, meth_f in inspect.getmembers(db_obj, predicate=inspect.ismethod):
+    for meth_name, meth_f in inspect.getmembers(db_obj,
+                                                predicate=inspect.ismethod):
         if not meth_name.startswith('_'):
             setattr(db_obj, meth_name, __dumper(meth_f))
 

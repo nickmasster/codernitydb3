@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from CodernityDB.database import Database
+from codernitydb3.database import Database
 import shutil
 import os
 

@@ -15,17 +15,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # This test are for checking Parser only, using simple exec isn't exactly what database does with simple index code,
 # they are used only because they allow handy check of correctness of
 # generated code
 
-from CodernityDB.indexcreator import Parser, IndexCreatorValueException, IndexCreatorFunctionException
-from CodernityDB.database import Database, RecordNotFound
-from CodernityDB.hash_index import HashIndex
-from CodernityDB.tree_index import TreeBasedIndex
-from CodernityDB.tree_index import MultiTreeBasedIndex
-from CodernityDB.hash_index import MultiHashIndex
+from codernitydb3.indexcreator import Parser, IndexCreatorValueException, IndexCreatorFunctionException
+from codernitydb3.database import Database, RecordNotFound
+from codernitydb3.hash_index import HashIndex
+from codernitydb3.tree_index import TreeBasedIndex
+from codernitydb3.tree_index import MultiTreeBasedIndex
+from codernitydb3.hash_index import MultiHashIndex
 from itertools import izip
 from hashlib import md5
 from py.test import raises
@@ -55,6 +54,7 @@ def simple_compare(s, args_mkv, args_mk):
         assert globals()[n]('test', 'test').make_key(a) == o
         # assert globals()[n2]('test','test').make_key(a) == o
 
+
 # special comparator for comparing lists
 
 
@@ -76,7 +76,6 @@ def simple_compare_without_order(s, args_mkv, args_mk):
 
 
 class TestIndexCreatorRightInput:
-
     def test_2nd_arg_of_mkv(self, p):
         s = """
         name = "s"
@@ -119,38 +118,59 @@ class TestIndexCreatorRightInput:
         make_key_value:
         md5(b),a"""
 
-        simple_compare(s, [({'a': 'a'}, (md5('a').digest(), {'a': 'a'})),
-                           ({'a': 'qwerty'}, (
-                            md5('qwerty').digest(), {'a': 'qwerty'}))
-                           ],
-                       [
-                           ({'a': 'e'}, md5('e').digest()),
-                           ({'a': 'qwerty'}, md5('qwerty').digest())
-                       ])
-        simple_compare(s2, [({'a': 'a'}, ('a', {'a': 'a'})),
-                            ({'a': 'qwerty'}, ('qwerty', {'a': 'qwerty'}))
-                            ],
-                       [
-                           ({'a': 'e'}, md5('e').digest()),
-                           ({'a': 'qwerty'}, md5('qwerty').digest())
-                       ])
+        simple_compare(s, [({
+            'a': 'a'
+        }, (md5('a').digest(), {
+            'a': 'a'
+        })), ({
+            'a': 'qwerty'
+        }, (md5('qwerty').digest(), {
+            'a': 'qwerty'
+        }))], [({
+            'a': 'e'
+        }, md5('e').digest()), ({
+            'a': 'qwerty'
+        }, md5('qwerty').digest())])
+        simple_compare(s2, [({
+            'a': 'a'
+        }, ('a', {
+            'a': 'a'
+        })), ({
+            'a': 'qwerty'
+        }, ('qwerty', {
+            'a': 'qwerty'
+        }))], [({
+            'a': 'e'
+        }, md5('e').digest()), ({
+            'a': 'qwerty'
+        }, md5('qwerty').digest())])
 
-        simple_compare(s3, [({'a': 'a', 'b': 'b'}, ('a', 'a')),
-                            ({'a': 'qwerty', 'b': 'b'}, ('qwerty', 'qwerty'))
-                            ],
-                       [
-                           ({'a': 'e'}, md5('e').digest()),
-                           ({'a': 'qwerty'}, md5('qwerty').digest())
-                       ])
+        simple_compare(s3, [({
+            'a': 'a',
+            'b': 'b'
+        }, ('a', 'a')), ({
+            'a': 'qwerty',
+            'b': 'b'
+        }, ('qwerty', 'qwerty'))], [({
+            'a': 'e'
+        }, md5('e').digest()), ({
+            'a': 'qwerty'
+        }, md5('qwerty').digest())])
 
-        simple_compare(s4, [({'a': 'a', 'b': 'b'}, (md5('b').digest(), 'a')),
-                            ({'a': 'qwerty', 'b':
-                              'b'}, (md5('b').digest(), 'qwerty'))
-                            ],
-                       [
-                           ({'a': 'e'}, md5('e').digest()),
-                           ({'a': 'qwerty'}, md5('qwerty').digest())
-                       ])
+        simple_compare(s4, [({
+            'a': 'a',
+            'b': 'b'
+        }, (md5('b').digest(), 'a')),
+                            ({
+                                'a': 'qwerty',
+                                'b': 'b'
+                            }, (md5('b').digest(), 'qwerty'))],
+                       [({
+                           'a': 'e'
+                       }, md5('e').digest()),
+                        ({
+                            'a': 'qwerty'
+                        }, md5('qwerty').digest())])
 
     def test_name_or_type_as_string(self):
         s = """
@@ -174,21 +194,31 @@ class TestIndexCreatorRightInput:
         make_key_value:
         md5(a),None
         """
-        simple_compare(s, [({'a': 'a'}, (md5('a').digest(), None)),
-                           ({'a': 'qwerty'}, (md5('qwerty').digest(), None))
-                           ],
-                       [
-                           ({'a': 'e'}, md5('e').digest()),
-                           ({'a': 'qwerty'}, md5('qwerty').digest())
-                       ])
+        simple_compare(s, [({
+            'a': 'a'
+        }, (md5('a').digest(), None)),
+                           ({
+                               'a': 'qwerty'
+                           }, (md5('qwerty').digest(), None))],
+                       [({
+                           'a': 'e'
+                       }, md5('e').digest()),
+                        ({
+                            'a': 'qwerty'
+                        }, md5('qwerty').digest())])
 
-        simple_compare(s2, [({'a': 'a'}, (md5('a').digest(), None)),
-                            ({'a': 'qwerty'}, (md5('qwerty').digest(), None))
-                            ],
-                       [
-                           ({'a': 'e'}, (md5('e').digest())),
-                           ({'a': 'qwerty'}, (md5('qwerty').digest()))
-                       ])
+        simple_compare(s2, [({
+            'a': 'a'
+        }, (md5('a').digest(), None)),
+                            ({
+                                'a': 'qwerty'
+                            }, (md5('qwerty').digest(), None))],
+                       [({
+                           'a': 'e'
+                       }, (md5('e').digest())),
+                        ({
+                            'a': 'qwerty'
+                        }, (md5('qwerty').digest()))])
 
     def test_fliped_definitions(self):
         s = """
@@ -212,21 +242,31 @@ class TestIndexCreatorRightInput:
         make_key_value:
         md5(a),None
         """
-        simple_compare(s, [({'a': 'a'}, (md5('a').digest(), None)),
-                           ({'a': 'qwerty'}, (md5('qwerty').digest(), None))
-                           ],
-                       [
-                           ({'a': 'e'}, md5('e').digest()),
-                           ({'a': 'qwerty'}, md5('qwerty').digest())
-                       ])
+        simple_compare(s, [({
+            'a': 'a'
+        }, (md5('a').digest(), None)),
+                           ({
+                               'a': 'qwerty'
+                           }, (md5('qwerty').digest(), None))],
+                       [({
+                           'a': 'e'
+                       }, md5('e').digest()),
+                        ({
+                            'a': 'qwerty'
+                        }, md5('qwerty').digest())])
 
-        simple_compare(s2, [({'a': 'a'}, (md5('a').digest(), None)),
-                            ({'a': 'qwerty'}, (md5('qwerty').digest(), None))
-                            ],
-                       [
-                           ({'a': 'e'}, md5('e').digest()),
-                           ({'a': 'qwerty'}, md5('qwerty').digest())
-                       ])
+        simple_compare(s2, [({
+            'a': 'a'
+        }, (md5('a').digest(), None)),
+                            ({
+                                'a': 'qwerty'
+                            }, (md5('qwerty').digest(), None))],
+                       [({
+                           'a': 'e'
+                       }, md5('e').digest()),
+                        ({
+                            'a': 'qwerty'
+                        }, md5('qwerty').digest())])
 
     def test_None_equivalents(self):
         s = """
@@ -239,13 +279,15 @@ class TestIndexCreatorRightInput:
         null
         make_key:
         none"""
-        simple_compare(s, [({'a': 'a'}, None),
-                           ({'a': 'qwerty'}, None)
-                           ],
-                       [
-                           ({'a': 'e'}, None),
-                           ({'a': 'qwerty'}, None)
-                       ])
+        simple_compare(s, [({
+            'a': 'a'
+        }, None), ({
+            'a': 'qwerty'
+        }, None)], [({
+            'a': 'e'
+        }, None), ({
+            'a': 'qwerty'
+        }, None)])
 
     def test_assign_prop_equivalents(self):
         s = """
@@ -269,20 +311,30 @@ class TestIndexCreatorRightInput:
         make_key_value:
         md5(a),None
         """
-        simple_compare(s, [({'a': 'a'}, (md5('a').digest(), None)),
-                           ({'a': 'qwerty'}, (md5('qwerty').digest(), None))
-                           ],
-                       [
-                           ({'a': 'e'}, md5('e').digest()),
-                           ({'a': 'qwerty'}, md5('qwerty').digest())
-                       ])
-        simple_compare(s2, [({'a': 'a'}, (md5('a').digest(), None)),
-                            ({'a': 'qwerty'}, (md5('qwerty').digest(), None))
-                            ],
-                       [
-                           ({'a': 'e'}, md5('e').digest()),
-                           ({'a': 'qwerty'}, md5('qwerty').digest())
-                       ])
+        simple_compare(s, [({
+            'a': 'a'
+        }, (md5('a').digest(), None)),
+                           ({
+                               'a': 'qwerty'
+                           }, (md5('qwerty').digest(), None))],
+                       [({
+                           'a': 'e'
+                       }, md5('e').digest()),
+                        ({
+                            'a': 'qwerty'
+                        }, md5('qwerty').digest())])
+        simple_compare(s2, [({
+            'a': 'a'
+        }, (md5('a').digest(), None)),
+                            ({
+                                'a': 'qwerty'
+                            }, (md5('qwerty').digest(), None))],
+                       [({
+                           'a': 'e'
+                       }, md5('e').digest()),
+                        ({
+                            'a': 'qwerty'
+                        }, md5('qwerty').digest())])
 
     def test_automatic_generated_class_name(self, p):
         s = """
@@ -301,12 +353,14 @@ class TestIndexCreatorRightInput:
         assert rs[0] == "# s"
         assert rs[1][2:] == rs[2][6:39]
 
-        simple_compare(s, [({'a': 'a'}, (md5('a').digest(), None)),
-                           ({'a': 'qwerty'}, (md5('qwerty').digest(), None))
-                           ],
-                       [
-                           ({'a': 'e'}, 'e')
-                       ])
+        simple_compare(s, [({
+            'a': 'a'
+        }, (md5('a').digest(), None)),
+                           ({
+                               'a': 'qwerty'
+                           }, (md5('qwerty').digest(), None))], [({
+                               'a': 'e'
+                           }, 'e')])
 
     def test_md5(self):
         s = """
@@ -321,13 +375,16 @@ class TestIndexCreatorRightInput:
         a != 'e' : md5(a)
         a"""
 
-        simple_compare(s, [({'a': 'a'}, (md5('a').digest(), None)),
-                           ({'a': 'qwerty'}, (md5('qwerty').digest(), None))
-                           ],
-                       [
-                           ({'a': 'e'}, 'e'),
-                           ({'a': 'eeee'}, md5('eeee').digest())
-                       ])
+        simple_compare(s, [({
+            'a': 'a'
+        }, (md5('a').digest(), None)),
+                           ({
+                               'a': 'qwerty'
+                           }, (md5('qwerty').digest(), None))], [({
+                               'a': 'e'
+                           }, 'e'), ({
+                               'a': 'eeee'
+                           }, md5('eeee').digest())])
 
         s2 = """
         name = s2
@@ -341,14 +398,17 @@ class TestIndexCreatorRightInput:
         a != 'e' : md5(a)+a
         a"""
 
-        simple_compare(s2, [({'a': 'a'}, (md5('aaaa').digest() + 'a', None)),
-                            ({'a': 'qwerty'}, (
-                             md5('qwertyaaa').digest() + 'a', None))
-                            ],
-                       [
-                           ({'a': 'e'}, 'e'),
-                           ({'a': 'eeee'}, md5('eeee').digest() + 'eeee')
-                       ])
+        simple_compare(s2, [({
+            'a': 'a'
+        }, (md5('aaaa').digest() + 'a', None)),
+                            ({
+                                'a': 'qwerty'
+                            }, (md5('qwertyaaa').digest() + 'a', None))],
+                       [({
+                           'a': 'e'
+                       }, 'e'), ({
+                           'a': 'eeee'
+                       }, md5('eeee').digest() + 'eeee')])
 
     def test_no_conditionals_return_dicts(self):
         s = """
@@ -363,14 +423,19 @@ class TestIndexCreatorRightInput:
         make_key:
         key"""
 
-        simple_compare(
-            s, [({'test': 'a', 'b': 'e'}, {'test': 'a', 'b': 'e'}),
-                ({}, {})
-                ],
-            [(
-             {'test': 'a', 'b': 'e'}, {'test': 'a', 'b': 'e'}),
-             ({}, {})
-             ])
+        simple_compare(s, [({
+            'test': 'a',
+            'b': 'e'
+        }, {
+            'test': 'a',
+            'b': 'e'
+        }), ({}, {})], [({
+            'test': 'a',
+            'b': 'e'
+        }, {
+            'test': 'a',
+            'b': 'e'
+        }), ({}, {})])
 
         s2 = """
         name = s2
@@ -383,10 +448,16 @@ class TestIndexCreatorRightInput:
         make_key:
         key"""
 
-        simple_compare(s2, [({}, {'t': 'a', 'e': 1})
-                            ],
-                       [({'e': 2, 't': 'b'}, {'e': 2, 't': 'b'})
-                        ])
+        simple_compare(s2, [({}, {
+            't': 'a',
+            'e': 1
+        })], [({
+            'e': 2,
+            't': 'b'
+        }, {
+            'e': 2,
+            't': 'b'
+        })])
 
         s3 = """
         type = HashIndex
@@ -398,10 +469,7 @@ class TestIndexCreatorRightInput:
         "::::::",None
         make_key:
         "::::::":'a'"""
-        simple_compare(s3, [({}, ("::::::", None))
-                            ],
-                       [({}, "a")
-                        ])
+        simple_compare(s3, [({}, ("::::::", None))], [({}, "a")])
 
     def test_simple_conditionals(self):
         s = """
@@ -418,12 +486,17 @@ class TestIndexCreatorRightInput:
         test < 1: 1
         key"""
 
-        simple_compare(s, [({'test': 4}, (0, None)),
-                      ({'test': 6}, (1, None))
-        ],
-            [({'test': 1}, {'test': 1}),
-             ({'test': 0}, 1)
-             ])
+        simple_compare(s, [({
+            'test': 4
+        }, (0, None)), ({
+            'test': 6
+        }, (1, None))], [({
+            'test': 1
+        }, {
+            'test': 1
+        }), ({
+            'test': 0
+        }, 1)])
 
         s2 = """
         type = HashIndex
@@ -440,13 +513,19 @@ class TestIndexCreatorRightInput:
         test < 1: 1
         key"""
 
-        simple_compare(s2, [({'test': 4}, (3, None)),
-                      ({'test': 6}, (1, None)),
-            ({'test': 3}, (0, None))
-        ],
-            [({'test': 1}, {'test': 1}),
-             ({'test': 0}, 1)
-             ])
+        simple_compare(s2, [({
+            'test': 4
+        }, (3, None)), ({
+            'test': 6
+        }, (1, None)), ({
+            'test': 3
+        }, (0, None))], [({
+            'test': 1
+        }, {
+            'test': 1
+        }), ({
+            'test': 0
+        }, 1)])
         # unfortunately tokenize seems to not parse - sign in right way (it doesn't set its type to token.MINUS :/)
         # added a hack to indexcreator
         s3 = """
@@ -464,13 +543,22 @@ class TestIndexCreatorRightInput:
         a-1-1-1-1-9*4 > 0: 1
         key"""
 
-        simple_compare(s3, [({'a': 6, 'b': 17}, (1, None)),
-                      ({'a': 6, 'b': 3}, (3, None)),
-            ({'a': 3, 'b': 17}, (0, None))
-        ],
-            [({'a': 41}, 1),
-             ({'a': 40}, {'a': 40})
-             ])
+        simple_compare(s3, [({
+            'a': 6,
+            'b': 17
+        }, (1, None)), ({
+            'a': 6,
+            'b': 3
+        }, (3, None)), ({
+            'a': 3,
+            'b': 17
+        }, (0, None))], [({
+            'a': 41
+        }, 1), ({
+            'a': 40
+        }, {
+            'a': 40
+        })])
 
     def test_or_and_in_conditionals(self):
         s = """
@@ -490,17 +578,25 @@ class TestIndexCreatorRightInput:
         key in [1,3]: 'c'
         'b'"""
 
-        simple_compare(s, [({'a': 5, 'b': 2}, (7, None)),
-                      ({'a': 6, 'b': 4}, (8, None)),
-            ({'a': 6, 'b': 2}, (8, None)),
-            ({'a': 1, 'b': 2}, (7, None)),
-            ({'a': 1, 'b': 4}, (4, None)),
-            ({'b': 3, 'a': 4}, ('c', None))
-        ],
-            [(-2, 'a'),
-             (2, 'b'),
-             (1, 'c')
-             ])
+        simple_compare(s, [({
+            'a': 5,
+            'b': 2
+        }, (7, None)), ({
+            'a': 6,
+            'b': 4
+        }, (8, None)), ({
+            'a': 6,
+            'b': 2
+        }, (8, None)), ({
+            'a': 1,
+            'b': 2
+        }, (7, None)), ({
+            'a': 1,
+            'b': 4
+        }, (4, None)), ({
+            'b': 3,
+            'a': 4
+        }, ('c', None))], [(-2, 'a'), (2, 'b'), (1, 'c')])
 
         s2 = """
         type = HashIndex
@@ -516,13 +612,19 @@ class TestIndexCreatorRightInput:
         key & 6
         """
 
-        simple_compare(s2, [({'a': True, 'b': True}, (1, None)),
-                      ({'a': False, 'b': True}, (0, None)),
-            ({'a': False, 'b': False}, (0, None)),
-            ({'a': True, 'b': False}, (0, None))
-        ],
-            [(5, 4)
-             ])
+        simple_compare(s2, [({
+            'a': True,
+            'b': True
+        }, (1, None)), ({
+            'a': False,
+            'b': True
+        }, (0, None)), ({
+            'a': False,
+            'b': False
+        }, (0, None)), ({
+            'a': True,
+            'b': False
+        }, (0, None))], [(5, 4)])
 
         s3 = """
         type = HashIndex
@@ -538,13 +640,24 @@ class TestIndexCreatorRightInput:
         key | 6
         """
 
-        simple_compare(s3, [({'a': True, 'b': True}, (1, None)),
-                      ({'a': False, 'b': True}, (1, None)),
-            ({'a': False, 'b': False}, (0, None)),
-            ({'a': True, 'b': False}, (1, None)),
-        ],
-            [(5, 7)
-             ])
+        simple_compare(s3, [
+            ({
+                'a': True,
+                'b': True
+            }, (1, None)),
+            ({
+                'a': False,
+                'b': True
+            }, (1, None)),
+            ({
+                'a': False,
+                'b': False
+            }, (0, None)),
+            ({
+                'a': True,
+                'b': False
+            }, (1, None)),
+        ], [(5, 7)])
 
     def test_props(self, p):
         s = """
@@ -615,12 +728,17 @@ class TestIndexCreatorRightInput:
         make_key_value:
         0,None
         """
-        simple_compare(s, [({'a': 3, 'b': 4}, (0, None))
-                           ],
-                       [(5, 5),
-                        ("aaa", "aaa"),
-                           ({'a': 3, 'b': 4}, {'a': 3, 'b': 4})
-                        ])
+        simple_compare(s, [({
+            'a': 3,
+            'b': 4
+        }, (0, None))], [(5, 5), ("aaa", "aaa"),
+                         ({
+                             'a': 3,
+                             'b': 4
+                         }, {
+                             'a': 3,
+                             'b': 4
+                         })])
 
     def test_functions(self, p):
         s = """
@@ -632,12 +750,18 @@ class TestIndexCreatorRightInput:
         md5(str(md5(a))),None
         """
 
-        simple_compare(s, [({'a': 'a', 'b': 4}, (md5(str(md5('a').digest())).digest(), None))
-                           ],
-                       [(5, 5),
-                        ("aaa", "aaa"),
-                           ({'a': 3, 'b': 4}, {'a': 3, 'b': 4})
-                        ])
+        simple_compare(s, [({
+            'a': 'a',
+            'b': 4
+        }, (md5(str(md5('a').digest())).digest(), None))], [(5, 5),
+                                                            ("aaa", "aaa"),
+                                                            ({
+                                                                'a': 3,
+                                                                'b': 4
+                                                            }, {
+                                                                'a': 3,
+                                                                'b': 4
+                                                            })])
 
         s2 = """
         name = s2
@@ -650,18 +774,28 @@ class TestIndexCreatorRightInput:
         a,None
         """
 
-        simple_compare(
-            s2, [({'a': 'a', 'b': 1}, (md5(str(1)).digest(), None)),
-                 ({'a': 'a', 'b': 4}, ('a', None)),
-                 ({'a': 'eee', 'b':
-                   1}, (md5(str(1)).digest(), None)),
-                 ({'a': 'eee', 'b':
-                   3}, (md5('eee').digest(), None))
-                 ],
-            [(5, 5),
-             ("aaa", "aaa"),
-             ({'a': 3, 'b': 4}, {'a': 3, 'b': 4})
-             ])
+        simple_compare(s2, [({
+            'a': 'a',
+            'b': 1
+        }, (md5(str(1)).digest(), None)), ({
+            'a': 'a',
+            'b': 4
+        }, ('a', None)), ({
+            'a': 'eee',
+            'b': 1
+        }, (md5(str(1)).digest(), None)),
+                            ({
+                                'a': 'eee',
+                                'b': 3
+                            }, (md5('eee').digest(), None))], [(5, 5),
+                                                               ("aaa", "aaa"),
+                                                               ({
+                                                                   'a': 3,
+                                                                   'b': 4
+                                                               }, {
+                                                                   'a': 3,
+                                                                   'b': 4
+                                                               })])
 
         s3 = """
         name = s
@@ -672,15 +806,26 @@ class TestIndexCreatorRightInput:
         fix_r(a,5),None
         """
 
-        simple_compare(s3, [({'a': 'aaaa', 'b': 4}, ('_aaaa', None)),
-                      ({'a': 'aaaaaa', 'b': 4}, ('aaaaa', None)),
-            ({'a': '', 'b': 4}, ('_____', None)),
-            ({'a': 'aaaaa', 'b': 4}, ('aaaaa', None))
-        ],
-            [(5, 5),
-             ("aaa", "aaa"),
-             ({'a': 3, 'b': 4}, {'a': 3, 'b': 4})
-             ])
+        simple_compare(s3, [({
+            'a': 'aaaa',
+            'b': 4
+        }, ('_aaaa', None)), ({
+            'a': 'aaaaaa',
+            'b': 4
+        }, ('aaaaa', None)), ({
+            'a': '',
+            'b': 4
+        }, ('_____', None)), ({
+            'a': 'aaaaa',
+            'b': 4
+        }, ('aaaaa', None))], [(5, 5), ("aaa", "aaa"),
+                               ({
+                                   'a': 3,
+                                   'b': 4
+                               }, {
+                                   'a': 3,
+                                   'b': 4
+                               })])
 
     def test_enclosures(self, p):
 
@@ -696,10 +841,7 @@ class TestIndexCreatorRightInput:
         make_key:
         1"""
 
-        simple_compare(s, [({'a': "'aa", 'b': 4}, (1, None))
-                           ],
-                       [(5, 1)
-                        ])
+        simple_compare(s, [({'a': "'aa", 'b': 4}, (1, None))], [(5, 1)])
 
         s1 = """
         name = s
@@ -713,11 +855,13 @@ class TestIndexCreatorRightInput:
         make_key:
         1"""
 
-        simple_compare(s1, [({'a': "a)a", 'b': 4}, (1, None)),
-                      ({'a': "a}a", 'b': 4}, None)
-        ],
-            [(5, 1)
-             ])
+        simple_compare(s1, [({
+            'a': "a)a",
+            'b': 4
+        }, (1, None)), ({
+            'a': "a}a",
+            'b': 4
+        }, None)], [(5, 1)])
 
         s2 = """
         name = s
@@ -731,15 +875,16 @@ class TestIndexCreatorRightInput:
         make_key:
         1"""
 
-        simple_compare(s2, [({'a': 2, 'b': 4}, None),
-                      ({'a': 1, 'b': 4}, (1, None))
-        ],
-            [(5, 1)
-             ])
+        simple_compare(s2, [({
+            'a': 2,
+            'b': 4
+        }, None), ({
+            'a': 1,
+            'b': 4
+        }, (1, None))], [(5, 1)])
 
 
 class TestIndexCreatorExceptions():
-
     def test_no_properity(self, p):
         s = """
         make_key_value:
@@ -1541,7 +1686,6 @@ class TestIndexCreatorExceptions():
 
 
 class TestMultiIndexCreator:
-
     def test_prefix(self):
         s = """
         name = s
@@ -1550,19 +1694,27 @@ class TestMultiIndexCreator:
         prefix(a,2,3,3),None
         """
 
-        simple_compare_without_order(
-            s, [({'a': 'abcd', 'b': 4}, (sorted(["_ab", "abc"]), None)),
-                ({'a': 'ab', 'b':
-                  4}, (sorted(["_ab"]), None)),
-                ({'a': 'a', 'b':
-                  'abcd'}, (sorted([]), None)),
-                ({'a': '', 'b':
-                  'abcd'}, (sorted([]), None)),
-                ({'a': 'abc', 'b': 4},
-                 (sorted(["_ab", "abc"]), None))
-                ],
-            [
-            ])
+        simple_compare_without_order(s, [({
+            'a': 'abcd',
+            'b': 4
+        }, (sorted(["_ab", "abc"]), None)),
+                                         ({
+                                             'a': 'ab',
+                                             'b': 4
+                                         }, (sorted(["_ab"]), None)),
+                                         ({
+                                             'a': 'a',
+                                             'b': 'abcd'
+                                         }, (sorted([]), None)),
+                                         ({
+                                             'a': '',
+                                             'b': 'abcd'
+                                         }, (sorted([]), None)),
+                                         ({
+                                             'a': 'abc',
+                                             'b': 4
+                                         }, (sorted(["_ab", "abc"]), None))],
+                                     [])
         s2 = """
         name = s2
         type = MultiTreeBasedIndex
@@ -1571,19 +1723,26 @@ class TestMultiIndexCreator:
         """
 
         simple_compare_without_order(
-            s2, [(
-                {'a': 'abcd', 'b': 4}, (sorted(["___ab", "__abc", "_abcd", "____a"]), None)),
-                ({'a': 'ab', 'b': 4}, (sorted(
-                                       ["___ab", "____a"]), None)),
-                ({'a': 'a', 'b': 'abcd'},
-                 (sorted(["____a"]), None)),
-                ({'a': '', 'b':
-                  'abcd'}, (sorted([]), None)),
-                ({'a': 'abc', 'b': 4}, (sorted(["___ab",
-                 "__abc", "____a"]), None))
-            ],
-            [
-            ])
+            s2, [({
+                'a': 'abcd',
+                'b': 4
+            }, (sorted(["___ab", "__abc", "_abcd", "____a"]), None)),
+                 ({
+                     'a': 'ab',
+                     'b': 4
+                 }, (sorted(["___ab", "____a"]), None)),
+                 ({
+                     'a': 'a',
+                     'b': 'abcd'
+                 }, (sorted(["____a"]), None)),
+                 ({
+                     'a': '',
+                     'b': 'abcd'
+                 }, (sorted([]), None)),
+                 ({
+                     'a': 'abc',
+                     'b': 4
+                 }, (sorted(["___ab", "__abc", "____a"]), None))], [])
 
     def test_suffix(self):
         s = """
@@ -1593,19 +1752,27 @@ class TestMultiIndexCreator:
         suffix(a,2,3,4),None
         """
 
-        simple_compare_without_order(
-            s, [({'a': 'abcd', 'b': 4}, (sorted(["__cd", "_bcd"]), None)),
-                ({'a': 'ab', 'b':
-                  4}, (sorted(["__ab"]), None)),
-                ({'a': 'a', 'b':
-                  'abcd'}, (sorted([]), None)),
-                ({'a': '', 'b':
-                  'abcd'}, (sorted([]), None)),
-                ({'a': 'abc', 'b': 4},
-                 (sorted(["__bc", "_abc"]), None))
-                ],
-            [
-            ])
+        simple_compare_without_order(s, [({
+            'a': 'abcd',
+            'b': 4
+        }, (sorted(["__cd", "_bcd"]), None)),
+                                         ({
+                                             'a': 'ab',
+                                             'b': 4
+                                         }, (sorted(["__ab"]), None)),
+                                         ({
+                                             'a': 'a',
+                                             'b': 'abcd'
+                                         }, (sorted([]), None)),
+                                         ({
+                                             'a': '',
+                                             'b': 'abcd'
+                                         }, (sorted([]), None)),
+                                         ({
+                                             'a': 'abc',
+                                             'b': 4
+                                         }, (sorted(["__bc", "_abc"]), None))],
+                                     [])
 
         s2 = """
         name = s2
@@ -1615,16 +1782,23 @@ class TestMultiIndexCreator:
         """
 
         simple_compare_without_order(
-            s2, [(
-                {'a': 'abcd', 'b': 4}, (sorted(["___cd", "__bcd", "_abcd", "____d"]), None)),
-                ({'a': 'ab', 'b': 4}, (sorted(
-                                       ["___ab", "____b"]), None)),
-                ({'a': 'a', 'b': 'abcd'},
-                 (sorted(["____a"]), None)),
-                ({'a': '', 'b':
-                  'abcd'}, (sorted([]), None)),
-                ({'a': 'abc', 'b': 4}, (sorted(["___bc",
-                 "__abc", "____c"]), None))
-            ],
-            [
-            ])
+            s2, [({
+                'a': 'abcd',
+                'b': 4
+            }, (sorted(["___cd", "__bcd", "_abcd", "____d"]), None)),
+                 ({
+                     'a': 'ab',
+                     'b': 4
+                 }, (sorted(["___ab", "____b"]), None)),
+                 ({
+                     'a': 'a',
+                     'b': 'abcd'
+                 }, (sorted(["____a"]), None)),
+                 ({
+                     'a': '',
+                     'b': 'abcd'
+                 }, (sorted([]), None)),
+                 ({
+                     'a': 'abc',
+                     'b': 4
+                 }, (sorted(["___bc", "__abc", "____c"]), None))], [])

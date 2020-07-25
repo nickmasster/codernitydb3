@@ -77,17 +77,17 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/CodernityDB.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/codernitydb3.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/CodernityDB.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/codernitydb3.qhc"
 
 devhelp:
 	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) $(BUILDDIR)/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/CodernityDB"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/CodernityDB"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/codernitydb3"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/codernitydb3"
 	@echo "# devhelp"
 
 epub:

@@ -15,17 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from CodernityDB.database import Database, RecordDeleted, RecordNotFound
-from CodernityDB.database import DatabaseException, RevConflict, DatabasePathException, DatabaseConflict, PreconditionsException, IndexConflict
+from codernitydb3.database import Database, RecordDeleted, RecordNotFound
+from codernitydb3.database import DatabaseException, RevConflict, DatabasePathException, DatabaseConflict, PreconditionsException, IndexConflict
 
-from CodernityDB.hash_index import HashIndex, UniqueHashIndex, MultiHashIndex
-from CodernityDB.index import IndexException, TryReindexException, IndexNotFoundException, IndexPreconditionsException
+from codernitydb3.hash_index import HashIndex, UniqueHashIndex, MultiHashIndex
+from codernitydb3.index import IndexException, TryReindexException, IndexNotFoundException, IndexPreconditionsException
 
-from CodernityDB.tree_index import TreeBasedIndex, MultiTreeBasedIndex
+from codernitydb3.tree_index import TreeBasedIndex, MultiTreeBasedIndex
 
-from CodernityDB.debug_stuff import database_step_by_step
+from codernitydb3.debug_stuff import database_step_by_step
 
-from CodernityDB import rr_cache
+from codernitydb3 import rr_cache
 
 import pytest
 import os
@@ -35,6 +35,7 @@ from hashlib import md5
 try:
     from collections import Counter
 except ImportError:
+
     class Counter(dict):
 
         'Mapping where default values are zero'
@@ -44,7 +45,6 @@ except ImportError:
 
 
 class CustomHashIndex(HashIndex):
-
     def __init__(self, *args, **kwargs):
         # kwargs['entry_line_format'] = '<32sIIIcI'
         kwargs['key_format'] = 'I'
@@ -66,7 +66,6 @@ class CustomHashIndex(HashIndex):
 
 
 class Md5Index(HashIndex):
-
     def __init__(self, *args, **kwargs):
         # kwargs['entry_line_format'] = '<32s32sIIcI'
         kwargs['key_format'] = '16s'
@@ -81,7 +80,6 @@ class Md5Index(HashIndex):
 
 
 class WithAIndex2(HashIndex):
-
     def __init__(self, *args, **kwargs):
         # kwargs['entry_line_format'] = '<32s32sIIcI'
         kwargs['key_format'] = '16s'
@@ -103,7 +101,6 @@ class WithAIndex2(HashIndex):
 
 
 class WithAIndex(HashIndex):
-
     def __init__(self, *args, **kwargs):
         # kwargs['entry_line_format'] = '<32s32sIIcI'
         kwargs['key_format'] = '16s'
@@ -125,7 +122,6 @@ class WithAIndex(HashIndex):
 
 
 class Simple_TreeIndex(TreeBasedIndex):
-
     def __init__(self, *args, **kwargs):
         kwargs['node_capacity'] = 100
         kwargs['key_format'] = 'I'
@@ -142,7 +138,6 @@ class Simple_TreeIndex(TreeBasedIndex):
 
 
 class WithRun_Index(HashIndex):
-
     def __init__(self, *args, **kwargs):
         # kwargs['entry_line_format'] = '<32sIIIcI'
         kwargs['key_format'] = 'I'
@@ -150,8 +145,10 @@ class WithRun_Index(HashIndex):
         super(WithRun_Index, self).__init__(*args, **kwargs)
 
     def run_sum(self, db_obj, key):
-        gen = db_obj.get_many(index_name=self.name, key=key,
-                              limit=-1, with_storage=True)
+        gen = db_obj.get_many(index_name=self.name,
+                              key=key,
+                              limit=-1,
+                              with_storage=True)
         vals = []
         while True:
             try:
@@ -174,7 +171,6 @@ class WithRun_Index(HashIndex):
 
 
 class WithRunEdit_Index(HashIndex):
-
     def __init__(self, *args, **kwargs):
         # kwargs['entry_line_format'] = '<32sIIIcI'
         kwargs['key_format'] = 'I'
@@ -182,8 +178,10 @@ class WithRunEdit_Index(HashIndex):
         super(WithRunEdit_Index, self).__init__(*args, **kwargs)
 
     def run_sum(self, db_obj, key):
-        gen = db_obj.get_many(index_name=self.name, key=key,
-                              limit=-1, with_storage=True)
+        gen = db_obj.get_many(index_name=self.name,
+                              key=key,
+                              limit=-1,
+                              with_storage=True)
         vals = []
         while True:
             try:
@@ -207,7 +205,7 @@ class WithRunEdit_Index(HashIndex):
 
 class TreeMultiTest(MultiTreeBasedIndex):
 
-    custom_header = """from CodernityDB.tree_index import MultiTreeBasedIndex
+    custom_header = """from codernitydb3.tree_index import MultiTreeBasedIndex
 from itertools import izip"""
 
     def __init__(self, *args, **kwargs):
@@ -223,9 +221,9 @@ from itertools import izip"""
         for x in xrange(l - 1, max_l):
             m = (name, )
             for y in xrange(0, x):
-                m += (name[y + 1:],)
-            out.update(set(''.join(x).rjust(
-                16, '_').lower() for x in izip(*m)))  # ignore import error
+                m += (name[y + 1:], )
+            out.update(set(''.join(x).rjust(16, '_').lower()
+                           for x in izip(*m)))  # ignore import error
         return out, dict(name=name)
 
     def make_key(self, key):
@@ -233,7 +231,6 @@ from itertools import izip"""
 
 
 class MajorIndexTest(TreeBasedIndex):
-
     def __init__(self, *args, **kwargs):
         kwargs['key_format'] = '50s'
         super(MajorIndexTest, self).__init__(*args, **kwargs)
@@ -255,7 +252,6 @@ class MinorIndexTest(MajorIndexTest):
 
 
 class DB_Tests:
-
     def setup_method(self, method):
         self.counter = Counter()
 
@@ -334,10 +330,12 @@ class DB_Tests:
     def test_real_life_example_random(self, tmpdir, operations):
 
         db = self._db(os.path.join(str(tmpdir), 'db'))
-        db.set_indexes([UniqueHashIndex(db.path, 'id'),
-                        WithAIndex(db.path, 'with_a'),
-                        CustomHashIndex(db.path, 'custom'),
-                        Simple_TreeIndex(db.path, 'tree')])
+        db.set_indexes([
+            UniqueHashIndex(db.path, 'id'),
+            WithAIndex(db.path, 'with_a'),
+            CustomHashIndex(db.path, 'custom'),
+            Simple_TreeIndex(db.path, 'tree')
+        ])
         db.create()
         database_step_by_step(db)
 
@@ -421,15 +419,24 @@ class DB_Tests:
             assert len(inserted) == db.count(db.all, 'id')
             l_c = db.count(db.get_many, 'custom', key=0, limit=operations)
             r_c = db.count(db.get_many, 'custom', key=1, limit=operations)
-            same = set(map(lambda x: x['_id'], db.get_many('custom', key=0, limit=operations))).intersection(set(map(lambda x: x['_id'], db.get_many('custom', key=1, limit=operations))))
+            same = set(
+                map(lambda x: x['_id'],
+                    db.get_many('custom', key=0,
+                                limit=operations))).intersection(
+                                    set(
+                                        map(
+                                            lambda x: x['_id'],
+                                            db.get_many('custom',
+                                                        key=1,
+                                                        limit=operations))))
             assert same == set()
             assert self.counter['l'] == l_c
             assert self.counter['r'] == r_c
-            assert self.counter['l'] + self.counter[
-                'r'] == db.count(db.all, 'custom')
+            assert self.counter['l'] + self.counter['r'] == db.count(
+                db.all, 'custom')
 
-        fcts = (
-            _insert,) * 20 + (_get,) * 10 + (_update,) * 10 + (_delete,) * 5
+        fcts = (_insert, ) * 20 + (_get, ) * 10 + (_update, ) * 10 + (
+            _delete, ) * 5
         for i in xrange(operations):
             f = random.choice(fcts)
             f()
@@ -441,8 +448,8 @@ class DB_Tests:
 
         count_and_check()
 
-        fcts = (
-            _insert,) * 20 + (_get,) * 10 + (_update,) * 10 + (_delete,) * 5
+        fcts = (_insert, ) * 20 + (_get, ) * 10 + (_update, ) * 10 + (
+            _delete, ) * 5
         for i in xrange(operations):
             f = random.choice(fcts)
             f()
@@ -549,10 +556,12 @@ class DB_Tests:
         def file_exists_in_indexes_dir(name):
             return [f for f in os.listdir(path_indexes) if name in f]
 
-        indexes = [klass(db.path, klass.__name__) for klass in (
-            HashIndex, WithAIndex, Md5Index)]
+        indexes = [
+            klass(db.path, klass.__name__)
+            for klass in (HashIndex, WithAIndex, Md5Index)
+        ]
 
-#        with name
+        #        with name
         for index in indexes:
             index_name = index.name
             db.add_index(index)
@@ -566,8 +575,10 @@ class DB_Tests:
             with pytest.raises(IndexNotFoundException):
                 db.get_index_details(index_name)
 #        with instance
-        indexes = [klass(db.path, klass.__name__) for klass in (
-            HashIndex, WithAIndex, Md5Index)]
+        indexes = [
+            klass(db.path, klass.__name__)
+            for klass in (HashIndex, WithAIndex, Md5Index)
+        ]
         for index in indexes:
             index_name = index.name
             db.add_index(index)
@@ -582,8 +593,10 @@ class DB_Tests:
                 db.get_index_details(index_name)
 
 #        with other instance
-        indexes = [klass(db.path, klass.__name__) for klass in (
-            HashIndex, WithAIndex, Md5Index)]
+        indexes = [
+            klass(db.path, klass.__name__)
+            for klass in (HashIndex, WithAIndex, Md5Index)
+        ]
         for index in indexes:
             index_name = index.name
             db.add_index(index)
@@ -637,7 +650,7 @@ class DB_Tests:
 
         db.destroy_index(hash_index.name)
         with pytest.raises(IndexNotFoundException):
-                db.get_index_details(hash_index.name)
+            db.get_index_details(hash_index.name)
 
         new_index = Md5Index(db.path, 'my_index')
         db.add_index(new_index)
@@ -816,7 +829,7 @@ class DB_Tests:
             assert c['_id'] == curr['_id']
             assert c['i'] == j
 
- #        with different instance
+#        with different instance
         for i in xrange(10):
             curr = l[i]
             c = db.get("id", curr['_id'])
@@ -840,9 +853,7 @@ class DB_Tests:
         ind_a = WithAIndex(db.path, 'with_a')
         ind_c = CustomHashIndex(db.path, 'custom')
 
-        db.set_indexes([ind_id,
-                        ind_a,
-                        ind_c])
+        db.set_indexes([ind_id, ind_a, ind_c])
         ind_id = db.indexes_names[ind_id.name]
         ind_a = db.indexes_names[ind_a.name]
 
@@ -858,7 +869,7 @@ class DB_Tests:
             nr = random.randint(0, len(l) - 1)
             curr = l[nr]
             db.delete(curr)
-            del(l[nr])
+            del (l[nr])
 
 #        index id
         with pytest.raises(DatabaseException):
@@ -874,7 +885,7 @@ class DB_Tests:
             nr = random.randint(0, len(l) - 1)
             curr = l[nr]
             db.delete(curr)
-            del(l[nr])
+            del (l[nr])
 
         db.reindex_index(ind_a)
         for j in range(len(l)):
@@ -887,7 +898,7 @@ class DB_Tests:
             nr = random.randint(0, len(l) - 1)
             curr = l[nr]
             db.delete(curr)
-            del(l[nr])
+            del (l[nr])
 
         db.reindex_index(ind_c.name)
         for j in range(len(l)):
@@ -899,7 +910,9 @@ class DB_Tests:
             nr = random.randint(0, len(l) - 1)
             curr = l[nr]
             db.delete(curr)
-            del(l[nr])
+            del (l[nr])
+
+
 #        with different instance
         with pytest.raises(DatabaseException):
             db.reindex_index(WithAIndex(db.path, 'with_a'))
@@ -942,7 +955,7 @@ class DB_Tests:
         for x in xrange(20):
             db.insert(dict(t=x, a=x))
         el = db.insert(dict(t=1, a=1))
-#        el['new_data']='new'
+        #        el['new_data']='new'
         db.add_index(WithAIndex(db.path, 'with_a'))
         db.add_index(Simple_TreeIndex(db.path, 'tree'))
         db.delete(el)
@@ -1003,8 +1016,8 @@ class DB_Tests:
     def test_multi_index(self, tmpdir):
         with open('tests/misc/words.txt', 'r') as f:
             data = f.read().split()
-        words = map(
-            lambda x: x.strip().replace('.', "").replace(',', ""), data)
+        words = map(lambda x: x.strip().replace('.', "").replace(',', ""),
+                    data)
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
         db.add_index(TreeMultiTest(db.path, 'words'))
@@ -1027,7 +1040,6 @@ class DB_Tests:
 
     def test_add_indented_index(self, tmpdir):
         class IndentedMd5Index(HashIndex):
-
             def __init__(self, *args, **kwargs):
                 # kwargs['entry_line_format'] = '<32s32sIIcI'
                 kwargs['key_format'] = '16s'
@@ -1048,7 +1060,7 @@ class DB_Tests:
         assert db.get('ind', 'a', with_doc=True)['doc']['name'] == 'a'
 
     def test_patch_flush_fsync(self, tmpdir):
-        from CodernityDB.patch import patch_flush_fsync
+        from codernitydb3.patch import patch_flush_fsync
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
         patch_flush_fsync(db)  # patch it

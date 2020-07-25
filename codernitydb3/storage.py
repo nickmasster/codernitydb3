@@ -21,9 +21,8 @@ import shutil
 import marshal
 import io
 
-
 try:
-    from CodernityDB import __version__
+    from codernitydb3 import __version__
 except ImportError:
     from __init__ import __version__
 
@@ -33,11 +32,9 @@ class StorageException(Exception):
 
 
 class DummyStorage(object):
-
     """
     Storage mostly used to fake real storage
     """
-
     def create(self, *args, **kwargs):
         pass
 
@@ -87,19 +84,22 @@ class IU_Storage(object):
     def create(self):
         if os.path.exists(os.path.join(self.db_path, self.name + "_stor")):
             raise IOError("Storage already exists!")
-        with io.open(os.path.join(self.db_path, self.name + "_stor"), 'wb') as f:
+        with io.open(os.path.join(self.db_path, self.name + "_stor"),
+                     'wb') as f:
             f.write(struct.pack("10s90s", self.__version__, '|||||'))
             f.close()
-        self._f = io.open(os.path.join(
-            self.db_path, self.name + "_stor"), 'r+b', buffering=0)
+        self._f = io.open(os.path.join(self.db_path, self.name + "_stor"),
+                          'r+b',
+                          buffering=0)
         self.flush()
         self._f.seek(0, 2)
 
     def open(self):
         if not os.path.exists(os.path.join(self.db_path, self.name + "_stor")):
             raise IOError("Storage doesn't exists!")
-        self._f = io.open(os.path.join(
-            self.db_path, self.name + "_stor"), 'r+b', buffering=0)
+        self._f = io.open(os.path.join(self.db_path, self.name + "_stor"),
+                          'r+b',
+                          buffering=0)
         self.flush()
         self._f.seek(0, 2)
 

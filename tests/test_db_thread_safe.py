@@ -15,8 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from CodernityDB.database_thread_safe import ThreadSafeDatabase
+from codernitydb3.database_thread_safe import ThreadSafeDatabase
 from shared import DB_Tests, WithAIndex
 from hash_tests import HashIndexTests
 from tree_tests import TreeIndexTests
@@ -53,7 +52,7 @@ class Test_Threads(object):
         db.add_index(WithAIndex(db.path, 'with_a'))
         ths = []
         for x in xrange(100):
-            ths.append(Thread(target=db.insert, args=(dict(a=x),)))
+            ths.append(Thread(target=db.insert, args=(dict(a=x), )))
         for th in ths:
             th.start()
         for th in ths:
@@ -66,7 +65,8 @@ class Test_Threads(object):
             l.remove(a)
         assert l == []
 
-    @pytest.mark.parametrize(('threads_num', ), [(x, ) for x in (3, 10, 20, 50, 100, 250)])
+    @pytest.mark.parametrize(('threads_num', ),
+                             [(x, ) for x in (3, 10, 20, 50, 100, 250)])
     def test_conc_update(self, tmpdir, threads_num):
         db = self._db(os.path.join(str(tmpdir), 'db'))
         db.create()
@@ -82,6 +82,8 @@ class Test_Threads(object):
                 doc['a'] += 1
                 try:
                     db.update(doc)
+
+
 #                    pass
                 except:
                     i += 1
@@ -90,6 +92,7 @@ class Test_Threads(object):
                     time.sleep(random.random() / 100)
                 else:
                     return True
+
         ths = []
         for x in xrange(threads_num):  # python threads... beware!!!
             ths.append(Thread(target=updater))

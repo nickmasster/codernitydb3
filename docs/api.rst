@@ -10,7 +10,7 @@ understand it. In other case you should visit:
 - :ref:`design`
 - :ref:`quick_tutorial`
 
-And you probably want to use |CodernityDB-HTTP-link| instead this embedded version.
+And you probably want to use |codernitydb3-HTTP-link| instead this embedded version.
 
 Database
 --------
@@ -22,7 +22,7 @@ Database
 Standard
 ^^^^^^^^
 
-.. automodule:: CodernityDB.database
+.. automodule:: codernitydb3.database
     :members:
     :undoc-members:
     :show-inheritance:
@@ -31,7 +31,7 @@ Standard
 Thread Safe Database
 ^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: CodernityDB.database_thread_safe.ThreadSafeDatabase
+.. autoclass:: codernitydb3.database_thread_safe.ThreadSafeDatabase
     :members:
     :undoc-members:
     :show-inheritance:
@@ -40,7 +40,7 @@ Thread Safe Database
 Super Thread Safe Database
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: CodernityDB.database_super_thread_safe
+.. automodule:: codernitydb3.database_super_thread_safe
     :members:
     :undoc-members:
     :show-inheritance:
@@ -49,7 +49,7 @@ Super Thread Safe Database
 Gevent Database
 ^^^^^^^^^^^^^^^
 
-.. automodule:: CodernityDB.database_gevent
+.. automodule:: codernitydb3.database_gevent
     :members:
     :undoc-members:
     :show-inheritance:
@@ -59,7 +59,7 @@ Indexes
 -------
 
 .. note::
-   If you're **not interested in CodernityDB development / extending** you don't need to read this section, 
+   If you're **not interested in codernitydb3 development / extending** you don't need to read this section, 
    please then refer to :ref:`database_indexes`, **otherwise** please remember that index methods are called from
    ``Database`` object.
 
@@ -68,7 +68,7 @@ Indexes
 General Index
 ^^^^^^^^^^^^^
 
-.. automodule:: CodernityDB.index
+.. automodule:: codernitydb3.index
     :members:
     :undoc-members:
     :show-inheritance:
@@ -80,7 +80,7 @@ Hash Index specific
 .. note::
     Please refer to :ref:`internal_hash_index` for description
 
-.. automodule:: CodernityDB.hash_index
+.. automodule:: codernitydb3.hash_index
     :members:
     :undoc-members:
     :show-inheritance:
@@ -92,7 +92,7 @@ B+Tree Index specific
 .. note::
     Please refer to :ref:`internal_tree_index` for description
 
-.. automodule:: CodernityDB.tree_index
+.. automodule:: codernitydb3.tree_index
     :members:
     :undoc-members:
     :show-inheritance:
@@ -102,7 +102,7 @@ B+Tree Index specific
 Storage
 -------
 
-.. automodule:: CodernityDB.storage
+.. automodule:: codernitydb3.storage
     :members:
     :undoc-members:
     :show-inheritance:
@@ -111,7 +111,7 @@ Storage
 Patches
 -------
 
-.. automodule:: CodernityDB.patch
+.. automodule:: codernitydb3.patch
     :members:
     :show-inheritance:
     :undoc-members:
