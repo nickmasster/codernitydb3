@@ -28,7 +28,7 @@ from codernitydb3.index import (Index, IndexException, DocIdNotFound,
 
 from codernitydb3.rr_cache import cache1lvl
 from codernitydb3.misc import random_hex_32
-from codernitydb3.storage import IU_Storage, DummyStorage
+from codernitydb3.storage import IU_Storage
 from codernitydb3.env import cdb_environment
 
 if cdb_environment.get('rlock_obj'):
@@ -77,7 +77,7 @@ class IU_HashIndex(Index):
         if storage_class and not isinstance(storage_class, str):
             storage_class = storage_class.__name__
         self.storage_class = storage_class
-        self.storage = None
+        self._storage = None
 
         self.bucket_line_format = "<I"
         self.bucket_line_size = struct.calcsize(self.bucket_line_format)
@@ -133,20 +133,20 @@ class IU_HashIndex(Index):
 
     def _open_storage(self):
         s = globals()[self.storage_class]
-        if not self.storage:
-            self.storage = s(self.db_path, self.name)
-        self.storage.open()
+        if not self._storage:
+            self._storage = s(self.db_path, self.name)
+        self._storage.open()
 
     def _create_storage(self):
         s = globals()[self.storage_class]
-        if not self.storage:
-            self.storage = s(self.db_path, self.name)
-        self.storage.create()
+        if not self._storage:
+            self._storage = s(self.db_path, self.name)
+        self._storage.create()
 
     # def close_index(self):
     #     self.buckets.flush()
     #     self.buckets.close()
-    #     self.storage.close()
+    #     self._storage.close()
 #    @lfu_cache(100)
 
     def _find_key(self, key):
@@ -474,10 +474,11 @@ class IU_HashIndex(Index):
                 doc_id, key, start, size, status = next(gen)
             except StopIteration:
                 break
-            self.storage._f.seek(start)
-            value = self.storage._f.read(size)
-            start_ = compact_ind.storage._f.tell()
-            compact_ind.storage._f.write(value)
+            # TODO replace by get()?
+            self._storage._fhd.seek(start)
+            value = self._storage._fhd.read(size)
+            start_ = compact_ind.storage._fhd.tell()
+            compact_ind.storage._fhd.write(value)
             compact_ind.insert(doc_id, key, start_, size, status)
 
         compact_ind.close_index()
@@ -747,7 +748,7 @@ class IU_UniqueHashIndex(IU_HashIndex):
 
     def insert_with_storage(self, _id, _rev, value):
         if value:
-            start, size = self.storage.insert(value)
+            start, size = self._storage.insert(value)
         else:
             start = 1
             size = 0
@@ -755,61 +756,11 @@ class IU_UniqueHashIndex(IU_HashIndex):
 
     def update_with_storage(self, _id, _rev, value):
         if value:
-            start, size = self.storage.insert(value)
+            start, size = self._storage.insert(value)
         else:
             start = 1
             size = 0
         return self.update(_id, _rev, start, size)
-
-
-class DummyHashIndex(IU_HashIndex):
-    def __init__(self,
-                 db_path,
-                 name,
-                 entry_line_format="<32s4sIIcI",
-                 *args,
-                 **kwargs):
-        super(DummyHashIndex, self).__init__(db_path, name, entry_line_format,
-                                             *args, **kwargs)
-        self.create_key = random_hex_32  # : set the function to create random key when no _id given
-        # self.entry_struct=struct.Struct(entry_line_format)
-
-    def update(self, *args, **kwargs):
-        return True
-
-    def insert(self, *args, **kwargs):
-        return True
-
-    def all(self, *args, **kwargs):
-        raise StopIteration
-
-    def get(self, *args, **kwargs):
-        raise ElemNotFound
-
-    def get_many(self, *args, **kwargs):
-        raise StopIteration
-
-    def delete(self, *args, **kwargs):
-        pass
-
-    def make_key_value(self, data):
-        return '1', {'_': 1}
-
-    def destroy(self):
-        pass
-
-    def _clear_cache(self):
-        pass
-
-    def _open_storage(self):
-        if not self.storage:
-            self.storage = DummyStorage()
-        self.storage.open()
-
-    def _create_storage(self):
-        if not self.storage:
-            self.storage = DummyStorage()
-        self.storage.create()
 
 
 class IU_MultiHashIndex(IU_HashIndex):

@@ -15,139 +15,210 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Storage module"""
+"""General storage"""
 
-import os
 import struct
 import marshal
-import io
+from os import fsync
+from abc import ABC
+from typing import Any, Optional, Tuple, Union
+from pathlib import Path
 
-try:
-    from codernitydb3 import __version__
-except ImportError:
-    from __init__ import __version__
+from codernitydb3 import __version__
 
 
 class StorageException(Exception):
-    pass
+    """General storage exception"""
 
 
-class DummyStorage:
-    """
-    Storage mostly used to fake real storage
-    """
-    def create(self, *args, **kwargs):
-        pass
-
-    def open(self, *args, **kwargs):
-        pass
-
-    def close(self, *args, **kwargs):
-        pass
-
-    def data_from(self, *args, **kwargs):
-        pass
-
-    def data_to(self, *args, **kwargs):
-        pass
-
-    def save(self, *args, **kwargs):
-        return 0, 0
-
-    def insert(self, *args, **kwargs):
-        return self.save(*args, **kwargs)
-
-    def update(self, *args, **kwargs):
-        return 0, 0
-
-    def get(self, *args, **kwargs):
-        return None
-
-    # def compact(self, *args, **kwargs):
-    #     pass
-
-    def fsync(self, *args, **kwargs):
-        pass
-
-    def flush(self, *args, **kwargs):
-        pass
+class StorageNotInitialized(StorageException):
+    """Storage is not initialized yet"""
 
 
-class IU_Storage(object):
+class IU_Storage(ABC):
+    """Abstract class for database storage"""
+
+    STATUS_C = b'c'
+    STATUS_D = b'd'
 
     __version__ = __version__
 
-    def __init__(self, db_path, name='main'):
-        self.db_path = db_path
-        self.name = name
-        self._header_size = 100
-        self._f = None
+    def __init__(self, db_path: Union[str, Path], name: Optional[str] = None):
+        """
+        Class constructor
 
-    def create(self):
-        if os.path.exists(os.path.join(self.db_path, self.name + "_stor")):
-            raise IOError("Storage already exists!")
-        with io.open(os.path.join(self.db_path, self.name + "_stor"),
-                     'wb') as f:
-            f.write(
-                struct.pack("10s90s", self.__version__.encode('utf8'),
+        :param db_path: Path to database
+        :type db_path: str or Path
+        :param name: Storage name
+        :type name: str
+        """
+        self._name = name or 'main'
+        self._path = Path(db_path).joinpath('%s_stor' % self._name)
+        self._fhd = None
+
+    @property
+    def name(self) -> str:
+        """Storage name"""
+        return self._name
+
+    @property
+    def path(self) -> Path:
+        """Storage path"""
+        return self._path
+
+    @property
+    def opened(self) -> bool:
+        """Is strorage opened?"""
+        return self._fhd and not self._fhd.closed
+
+    def create(self) -> None:
+        """
+        Create new storage
+
+        :raise StorageException: Storage already exists
+        """
+        if self._path.is_file():
+            raise StorageException('storage already exists')
+        with open(self._path, 'wb') as fhd:
+            fhd.write(
+                struct.pack('10s90s', self.__version__.encode('utf8'),
                             b'|||||'))
-            f.close()
-        self._f = io.open(os.path.join(self.db_path, self.name + "_stor"),
-                          'r+b',
-                          buffering=0)
-        self.flush()
-        self._f.seek(0, 2)
+        self.open()
 
-    def open(self):
-        if not os.path.exists(os.path.join(self.db_path, self.name + "_stor")):
-            raise IOError("Storage doesn't exists!")
-        self._f = io.open(os.path.join(self.db_path, self.name + "_stor"),
-                          'r+b',
-                          buffering=0)
-        self.flush()
-        self._f.seek(0, 2)
+    def open(self) -> None:
+        """
+        Open existing storage
 
-    def destroy(self):
-        os.unlink(os.path.join(self.db_path, self.name + '_stor'))
+        :raise StorageException: Storage doesn't exists
+        """
+        if not self._path.is_file():
+            raise StorageException("storage doesn't exists")
+        self._fhd = open(self._path, 'r+b', buffering=0)
+        self._fhd.seek(0, 2)
 
-    def close(self):
-        self._f.close()
-        # self.flush()
-        # self.fsync()
+    def destroy(self) -> None:
+        """
+        Destroy storage
+        """
+        self.close()
+        try:
+            self._path.unlink()
+        except FileNotFoundError:
+            pass
 
-    def data_from(self, data):
+    def close(self) -> None:
+        """
+        Close storage
+        """
+        if self.opened:
+            self._fhd.close()
+
+    # pylint: disable = R0201
+    def _data_from(self, data: bytes) -> Any:
+        """
+        Unpack data from storage
+
+        :param data: Packed data
+        :type data: bytes
+
+        :return: Unpacked data
+        :rtype: Any
+        """
         return marshal.loads(data)
 
-    def data_to(self, data):
+    # pylint: disable = R0201
+    def _data_to(self, data: Any) -> bytes:
+        """
+        Pack data into storage
+
+        :param data: Unpacked data
+        :type data: Any
+
+        :return: Packed data
+        :rtype: bytes
+        """
         return marshal.dumps(data)
 
-    def save(self, data):
-        s_data = self.data_to(data)
-        self._f.seek(0, 2)
-        start = self._f.tell()
-        size = len(s_data)
-        self._f.write(s_data)
+    def _save(self, data: Any) -> Tuple[int, int]:
+        """
+        Save data to storage
+
+        :param data: Data to save
+        :type data: Any
+
+        :return: Data location and size in storage
+        :rtype: Tuple[int, int]
+        """
+        if not self.opened:
+            raise StorageNotInitialized
+        self._fhd.seek(0, 2)
+        start = self._fhd.tell()
+        size = self._fhd.write(self._data_to(data))
         self.flush()
         return start, size
 
-    def insert(self, data):
-        return self.save(data)
+    def insert(self, data: Any) -> Tuple[int, int]:
+        """
+        Insert new data
 
-    def update(self, data):
-        return self.save(data)
+        :param data: Data
+        :type data: Any
 
-    def get(self, start, size, status='c'):
-        if status == 'd':
+        :return: Data start position and size in storage
+        :rtype: Tuple[int, int]
+        """
+        return self._save(data)
+
+    def update(self, data: Any) -> Tuple[int, int]:
+        """
+        Update existing data
+
+        :param data: Data
+        :type data: Any
+
+        :return: Data location and size in storage
+        :rtype: Tuple[int, int]
+        """
+        return self._save(data)
+
+    def get(self,
+            start: int,
+            size: int,
+            status: Optional[bytes] = None) -> Any:
+        """
+        Get data
+
+        :param start: Data start position
+        :type start: int
+        :param size: Data size
+        :type size: int
+        :param status: Data status
+        :type status: bytes
+
+        :return: Data from storage
+        :rtype: Any
+        """
+        # TODO probably `status` is unused
+        status = status or self.STATUS_C
+        if status == self.STATUS_D:
             return None
-        print(locals())
-        self._f.seek(start)
-        return self.data_from(self._f.read(size))
+        # print(locals())
+        self._fhd.seek(start)
+        return self._data_from(self._fhd.read(size))
 
-    def flush(self):
-        self._f.flush()
+    def flush(self) -> None:
+        """
+        Flush storage buffer into file
+        """
+        if self.opened:
+            self._fhd.flush()
 
-    def fsync(self):
-        os.fsync(self._f.fileno())
+    def fsync(self) -> None:
+        """"
+        Flush storage file into disk
+        """
+        if self.opened:
+            fsync(self._fhd.fileno())
 
 
 # classes for public use, done in this way because of
@@ -155,4 +226,4 @@ class IU_Storage(object):
 
 
 class Storage(IU_Storage):
-    pass
+    """General storage class for public use"""

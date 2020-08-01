@@ -78,7 +78,7 @@ class IU_TreeBasedIndex(Index):
         if storage_class and not isinstance(storage_class, str):
             storage_class = storage_class.__name__
         self.storage_class = storage_class
-        self.storage = None
+        self._storage = None
         cache = cache1lvl(100)
         twolvl_cache = cache2lvl(150)
         self._find_key = cache(self._find_key)
@@ -1988,15 +1988,15 @@ class IU_TreeBasedIndex(Index):
 
     def _open_storage(self):
         s = globals()[self.storage_class]
-        if not self.storage:
-            self.storage = s(self.db_path, self.name)
-        self.storage.open()
+        if not self._storage:
+            self._storage = s(self.db_path, self.name)
+        self._storage.open()
 
     def _create_storage(self):
         s = globals()[self.storage_class]
-        if not self.storage:
-            self.storage = s(self.db_path, self.name)
-        self.storage.create()
+        if not self._storage:
+            self._storage = s(self.db_path, self.name)
+        self._storage.create()
 
     def compact(self, node_capacity=0):
         if not node_capacity:
@@ -2013,10 +2013,11 @@ class IU_TreeBasedIndex(Index):
                 doc_id, key, start, size, status = next(gen)
             except StopIteration:
                 break
-            self.storage._f.seek(start)
-            value = self.storage._f.read(size)
-            start_ = compact_ind.storage._f.tell()
-            compact_ind.storage._f.write(value)
+            # TODO replace by get()?
+            self._storage._fhd.seek(start)
+            value = self._storage._fhd.read(size)
+            start_ = compact_ind.storage._fhd.tell()
+            compact_ind.storage._fhd.write(value)
             compact_ind.insert(doc_id, key, start_, size, status)
 
         compact_ind.close_index()

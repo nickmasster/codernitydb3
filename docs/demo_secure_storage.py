@@ -15,14 +15,14 @@ class Salsa20Storage(Storage):
         super(Salsa20Storage, self).__init__(db_path, name)
         self.enc_key = enc_key
 
-    def data_from(self, data):
+    def _data_from(self, data):
         iv = data[:8]
         sal = salsa20.Salsa20(self.enc_key, iv, 20)
         s_data = sal.decrypt(data[8:])
         m_data = marshal.loads(s_data)
         return m_data
 
-    def data_to(self, data):
+    def _data_to(self, data):
         iv = os.urandom(8)
         m_data = marshal.dumps(data)
         sal = salsa20.Salsa20(self.enc_key, iv, 20)
@@ -51,20 +51,20 @@ from hashlib import sha256"""
             self.__enc_key = sha256(value).digest()
         else:
             self.__enc_key = value
-        self.storage.enc_key = self.__enc_key
+        self._storage.enc_key = self.__enc_key
 
     def _setup_storage(self):
-        if not self.storage:
-            self.storage = Salsa20Storage(self.db_path, self.name,
-                                          self.enc_key)
+        if not self._storage:
+            self._storage = Salsa20Storage(self.db_path, self.name,
+                                           self.enc_key)
 
     def _open_storage(self):
         self._setup_storage()
-        self.storage.open()
+        self._storage.open()
 
     def _create_storage(self):
         self._setup_storage()
-        self.storage.create()
+        self._storage.create()
 
 
 def main():
